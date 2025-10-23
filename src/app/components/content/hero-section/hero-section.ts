@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-hero-section',
   standalone: true,
-  templateUrl: './hero-section.html'
+  templateUrl: './hero-section.html',
+  styleUrl: './hero-section.scss'
 })
 export class HeroSectionComponent {}

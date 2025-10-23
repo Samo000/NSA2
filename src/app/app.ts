@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component } from '@angular/core';
 import { NavbarComponent } from './components/navbar/navbar';
 import { ContentComponent } from './components/content/content';
 import { FooterComponent } from './components/footer/footer';
@@ -8,9 +8,6 @@ import { FooterComponent } from './components/footer/footer';
   standalone: true,
   imports: [NavbarComponent, ContentComponent, FooterComponent],
   templateUrl: './app.html',
-  styleUrl: './app.scss',
-  encapsulation: ViewEncapsulation.None
+  styleUrl: './app.scss'
 })
-export class App {
-  year = new Date().getFullYear();
-}
+export class App {}

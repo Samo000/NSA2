@@ -5,6 +5,7 @@ import { NavbarButtonsComponent } from './navbar-buttons/navbar-buttons';
   selector: 'app-navbar',
   standalone: true,
   imports: [NavbarButtonsComponent],
-  templateUrl: './navbar.html'
+  templateUrl: './navbar.html',
+  styleUrl: './navbar.scss'
 })
 export class NavbarComponent {}

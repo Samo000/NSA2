@@ -1,0 +1,28 @@
+.social-icons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.social-icons a {
+  color: #e6ebf5;
+  font-size: 1.15rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #151923;
+  border: 1px solid rgba(255,255,255,.08);
+  transition: transform .2s, color .2s, box-shadow .25s, background .2s;
+}
+
+.social-icons a:hover {
+  color: #00ffb3;
+  background: rgba(0,255,179,.08);
+  box-shadow: 0 0 14px rgba(0,255,179,.35);
+  transform: translateY(-3px);
+}

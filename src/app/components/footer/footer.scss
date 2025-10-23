@@ -1,0 +1,35 @@
+footer {
+  background: #080a0d;
+  padding: 2rem 1rem 2.2rem;
+  color: #bbb;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.footer-row {
+  max-width: 1200px;
+  margin: 0 auto 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+app-footer-links {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+app-footer-social {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.copy {
+  font-size: .9rem;
+  color: #798093;
+  margin: 0;
+}

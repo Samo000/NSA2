@@ -1,0 +1,23 @@
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links a {
+  color: #cfd6e6;
+  text-decoration: none;
+  font-weight: 500;
+  padding: .3rem .6rem;
+  border-radius: 8px;
+  transition: color .2s, background .2s, transform .2s;
+}
+
+.footer-links a:hover {
+  color: #00ffb3;
+  background: rgba(0,255,179,.08);
+  transform: translateY(-2px);
+}

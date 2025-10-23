@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-navbar-buttons',
   standalone: true,
-  templateUrl: './navbar-buttons.html'
+  templateUrl: './navbar-buttons.html',
+  styleUrl: './navbar-buttons.scss'
 })
 export class NavbarButtonsComponent {}

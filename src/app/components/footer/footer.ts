@@ -6,8 +6,7 @@ import { FooterSocialComponent } from './footer-social/footer-social';
   selector: 'app-footer',
   standalone: true,
   imports: [FooterLinksComponent, FooterSocialComponent],
-  templateUrl: './footer.html'
+  templateUrl: './footer.html',
+  styleUrl: './footer.scss'
 })
-export class FooterComponent {
-  year = new Date().getFullYear();
-}
+export class FooterComponent {}

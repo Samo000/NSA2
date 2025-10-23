@@ -6,6 +6,7 @@ import { ProductsSectionComponent } from './products-section/products-section';
   selector: 'app-content',
   standalone: true,
   imports: [HeroSectionComponent, ProductsSectionComponent],
-  templateUrl: './content.html'
+  templateUrl: './content.html',
+  styleUrl: './content.scss'
 })
 export class ContentComponent {}
