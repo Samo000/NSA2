@@ -1,4 +1,7 @@
 <div class="nav-buttons">
-  <button class="login">Prijava</button>
-  <button class="register">Registracija</button>
+  <button *ngFor="let b of buttons"
+          [ngClass]="{ 'login': b.id === 'login', 'register': b.id === 'register' }">
+    <i [class]="b.icon"></i>
+    <span>{{ b.label }}</span>
+  </button>
 </div>

@@ -1,6 +1,8 @@
 <ul class="footer-links">
-  <li><a href="#about">O nas</a></li>
-  <li><a href="#terms">Pogoji uporabe</a></li>
-  <li><a href="#privacy">Zasebnost</a></li>
-  <li><a href="#contact">Kontakt</a></li>
+  <li *ngFor="let l of links">
+    <a [href]="l.href" [attr.target]="l.external ? '_blank' : null" rel="noopener">
+      <i *ngIf="l.icon" [class]="l.icon"></i>
+      <span>{{ l.text }}</span>
+    </a>
+  </li>
 </ul>

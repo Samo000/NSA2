@@ -2,28 +2,12 @@
   <h2>Izbrani izdelki</h2>
 
   <div class="grid">
-    <div class="card">
+    <div class="card" *ngFor="let p of products">
       <div class="image-frame">
-        <img src="assets/laptop.jpg" alt="Gaming prenosnik">
+        <img [src]="p.src" [alt]="p.alt">
       </div>
-      <h3>Gaming prenosnik</h3>
-      <p>1.699 €</p>
-    </div>
-
-    <div class="card">
-      <div class="image-frame">
-        <img src="assets/keyboard.jpg" alt="Mehanska tipkovnica">
-      </div>
-      <h3>Mehanska tipkovnica</h3>
-      <p>89 €</p>
-    </div>
-
-    <div class="card">
-      <div class="image-frame">
-        <img src="assets/monitor.jpg" alt="27” Monitor">
-      </div>
-      <h3>27” Monitor</h3>
-      <p>279 €</p>
+      <h3>{{ p.name }}</h3>
+      <p>{{ p.price }}</p>
     </div>
   </div>
 </section>
