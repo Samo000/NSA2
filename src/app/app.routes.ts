@@ -3,6 +3,7 @@ import { ContentComponent } from './components/content/content';
 import { LoginComponent } from './pages/login/login';
 import { RegisterComponent } from './pages/register/register';
 import { CartComponent } from './pages/cart/cart';
+import { ProductPageComponent } from './pages/product/product';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -10,5 +11,6 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'cart', component: CartComponent, canActivate: [authGuard] },
+  { path: 'product/:slug', component: ProductPageComponent },
   { path: '**', redirectTo: '' }
 ];

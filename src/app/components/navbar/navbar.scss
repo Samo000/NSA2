@@ -83,3 +83,16 @@
     padding: 1rem 0;
   }
 }
+.navbar {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.navbar::-webkit-scrollbar {
+  height: 0;
+}
+
+.navbar__inner {
+  min-width: max-content;
+  flex-wrap: nowrap;
+}
