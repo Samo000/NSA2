@@ -1,0 +1,54 @@
+<section class="register-page">
+  <form class="register-card" (ngSubmit)="submit()">
+    <header class="head">
+      <h1>Registracija</h1>
+      <p>Ustvari nov uporabniški račun</p>
+    </header>
+
+    <div class="grid">
+      <div class="field">
+        <input type="text" placeholder="Ime" [(ngModel)]="firstName" name="firstName">
+      </div>
+
+      <div class="field">
+        <input type="text" placeholder="Priimek" [(ngModel)]="lastName" name="lastName">
+      </div>
+
+      <div class="field full">
+        <input type="email" placeholder="E-pošta" [(ngModel)]="email" name="email">
+      </div>
+
+      <div class="field">
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Geslo"
+          [(ngModel)]="password"
+          name="password"
+        >
+        <button type="button" class="icon-btn" (click)="showPassword = !showPassword" aria-label="Prikaži geslo">
+          <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+        </button>
+      </div>
+
+      <div class="field">
+        <input
+          [type]="showConfirm ? 'text' : 'password'"
+          placeholder="Potrditev gesla"
+          [(ngModel)]="confirmPassword"
+          name="confirmPassword"
+        >
+        <button type="button" class="icon-btn" (click)="showConfirm = !showConfirm" aria-label="Prikaži potrditev gesla">
+          <i class="fa-solid" [ngClass]="showConfirm ? 'fa-eye-slash' : 'fa-eye'"></i>
+        </button>
+      </div>
+
+      <div class="field full">
+        <input type="date" [(ngModel)]="birthDate" name="birthDate">
+      </div>
+    </div>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+
+    <button class="primary" type="submit">Registriraj se</button>
+  </form>
+</section>

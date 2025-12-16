@@ -1,0 +1,18 @@
+<section class="cart-page">
+  <div class="cart-wrap">
+    <h1>Košarica</h1>
+
+    <div class="empty" *ngIf="cart.items.length === 0">
+      Košarica je prazna
+    </div>
+
+    <div class="cart-item" *ngFor="let i of cart.items; let idx = index">
+      <span>{{ i }}</span>
+      <button (click)="cart.remove(idx)">Odstrani</button>
+    </div>
+
+    <button class="clear" *ngIf="cart.items.length" (click)="cart.clear()">
+      Počisti košarico
+    </button>
+  </div>
+</section>

@@ -1,34 +1,19 @@
 .nav-buttons {
   display: flex;
-  gap: 0.6rem;
+  gap: 1rem;
 }
 
-button {
-  border: none;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  font-weight: 600;
-  transition: transform 0.2s, box-shadow 0.3s;
-}
-
-.login {
-  background: transparent;
+.nav-buttons a {
+  padding: .6rem 1.1rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
   color: #fff;
-  border: 1px solid #fff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background .2s ease, transform .2s ease;
 }
 
-.register {
-  background: #00ffb3;
-  color: #000;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 10px #00ffb3;
-}
-
-@media (max-width: 900px) {
-  .nav-buttons {
-    display: none;
-  }
+.nav-buttons a:hover {
+  background: rgba(255,255,255,.14);
+  transform: translateY(-1px);
 }

@@ -1,13 +1,74 @@
 <section id="products" class="products">
-  <h2>Izbrani izdelki</h2>
+  <div class="head">
+    <h2>Izbrani izdelki</h2>
+    <p>Klikni izdelek za podrobnosti in specifikacije.</p>
+  </div>
 
   <div class="grid">
-    <div class="card" *ngFor="let p of products">
-      <div class="image-frame">
+    <article
+      class="card"
+      *ngFor="let p of products"
+      (click)="open(p)"
+      tabindex="0"
+    >
+      <div class="media">
         <img [src]="p.src" [alt]="p.alt">
       </div>
-      <h3>{{ p.name }}</h3>
-      <p>{{ p.price }}</p>
+
+      <div class="meta">
+        <h3>{{ p.name }}</h3>
+
+        <div class="row">
+          <span class="price">{{ p.price }}</span>
+          <span class="pill">Poglej</span>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="modal" *ngIf="selected">
+    <div class="backdrop" (click)="close()"></div>
+
+    <div class="sheet">
+      <button class="x" type="button" (click)="close()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="sheet-grid">
+        <div class="preview">
+          <div class="frame">
+            <img [src]="selected!.src" [alt]="selected!.alt">
+          </div>
+        </div>
+
+        <div class="details">
+          <h3 class="title">{{ selected!.name }}</h3>
+
+          <div class="pricebox">
+            <div class="price">{{ selected!.price }}</div>
+            <div class="hint">DDV vključen • hitra dostava</div>
+          </div>
+
+          <div class="specs">
+            <h4>Specifikacije</h4>
+            <ul>
+              <li *ngFor="let s of selected!.specs">{{ s }}</li>
+            </ul>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" type="button">
+              <i class="fa-solid fa-cart-shopping"></i>
+              Dodaj v košarico
+            </button>
+
+            <button class="btn ghost" type="button">
+              <i class="fa-regular fa-heart"></i>
+              Shrani
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

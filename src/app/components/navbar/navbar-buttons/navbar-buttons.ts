@@ -1,14 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NAV_BUTTONS, Button } from '../../../models/button.model';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-navbar-buttons',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './navbar-buttons.html',
   styleUrl: './navbar-buttons.scss'
 })
-export class NavbarButtonsComponent {
-  buttons: Button[] = NAV_BUTTONS;
-}
+export class NavbarButtonsComponent {}
