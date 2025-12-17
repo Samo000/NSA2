@@ -23,6 +23,7 @@ export class RegisterComponent {
   showConfirm = false;
 
   error = '';
+  loading = false;
 
   constructor(
     private auth: AuthService,
@@ -33,14 +34,25 @@ export class RegisterComponent {
     this.error = '';
 
     if (
-      !this.firstName ||
-      !this.lastName ||
-      !this.email ||
+      !this.firstName.trim() ||
+      !this.lastName.trim() ||
+      !this.email.trim() ||
       !this.password ||
       !this.confirmPassword ||
-      !this.birthDate
+      !this.birthDate.trim()
     ) {
       this.error = 'Izpolni vsa polja.';
+      return;
+    }
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim());
+    if (!emailOk) {
+      this.error = 'E-pošta ni veljavna.';
+      return;
+    }
+
+    if (this.password.length < 8) {
+      this.error = 'Geslo mora imeti vsaj 8 znakov.';
       return;
     }
 
@@ -49,18 +61,24 @@ export class RegisterComponent {
       return;
     }
 
-    const ok = this.auth.register(
+    this.loading = true;
+
+    this.auth.register(
       this.firstName,
       this.lastName,
       this.email,
       this.password,
+      this.confirmPassword,
       this.birthDate
-    );
-
-    if (ok) {
-      this.router.navigateByUrl('/cart');
-    } else {
-      this.error = 'Registracija ni uspela.';
-    }
+    ).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigateByUrl('/cart');
+      },
+      error: (e) => {
+        this.loading = false;
+        this.error = e?.error?.message || 'Registracija ni uspela.';
+      }
+    });
   }
 }

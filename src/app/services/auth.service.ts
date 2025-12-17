@@ -1,86 +1,95 @@
-import { Injectable, inject } from '@angular/core';
-import { PLATFORM_ID } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
+import { tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
-type User = { firstName: string; lastName: string; email: string; birthDate: string };
+export type User = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  birthDate?: string;
+};
+
+type AuthResponse = {
+  token: string;
+  user: User;
+};
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly storageKey = 'techmarket_auth_user';
+
+  private readonly api = 'http://localhost:3000/api';
+  private readonly userKey = 'techmarket_auth_user';
+  private readonly tokenKey = 'techmarket_auth_token';
 
   private user: User | null = null;
-
-  private readonly staticAccount = {
-    firstName: 'Test',
-    lastName: 'User',
-    email: 'test@techmarket.si',
-    password: 'Test123!',
-    birthDate: '2005-01-01'
-  };
+  private token: string | null = null;
 
   constructor() {
     this.user = this.readUser();
+    this.token = this.readToken();
   }
 
   isLoggedIn(): boolean {
-    return !!this.user;
+    return !!this.token && !!this.user;
   }
 
   getUser(): User | null {
     return this.user;
   }
 
-  login(email: string, password: string): boolean {
-    const e = (email || '').trim().toLowerCase();
-    const p = password || '';
-
-    const saved = this.readUser();
-    if (saved && saved.email.toLowerCase() === e) {
-      const savedPass = this.readPasswordForSavedUser() ?? '';
-      if (savedPass === p) {
-        this.user = saved;
-        this.writeUser(saved);
-        return true;
-      }
-    }
-
-    if (e === this.staticAccount.email.toLowerCase() && p === this.staticAccount.password) {
-      const u: User = {
-        firstName: this.staticAccount.firstName,
-        lastName: this.staticAccount.lastName,
-        email: this.staticAccount.email,
-        birthDate: this.staticAccount.birthDate
-      };
-      this.user = u;
-      this.writeUser(u);
-      this.writePasswordForSavedUser(this.staticAccount.password);
-      return true;
-    }
-
-    return false;
+  getToken(): string | null {
+    return this.token;
   }
 
-  register(firstName: string, lastName: string, email: string, password: string, birthDate: string): boolean {
-    const e = (email || '').trim().toLowerCase();
-    if (!e || !password) return false;
+  login(email: string, password: string): Observable<AuthResponse> {
+    const payload = { email: (email || '').trim().toLowerCase(), password: password || '' };
 
-    const u: User = {
+    return this.http.post<AuthResponse>(`${this.api}/auth/login`, payload).pipe(
+      tap((res) => {
+        this.user = res.user;
+        this.token = res.token;
+        this.writeUser(res.user);
+        this.writeToken(res.token);
+      })
+    );
+  }
+
+  register(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    confirmPassword: string,
+    birthDate: string
+  ): Observable<AuthResponse> {
+    const payload = {
       firstName: (firstName || '').trim(),
       lastName: (lastName || '').trim(),
-      email: e,
+      email: (email || '').trim().toLowerCase(),
+      password: password || '',
+      confirmPassword: confirmPassword || '',
       birthDate: (birthDate || '').trim()
     };
 
-    this.user = u;
-    this.writeUser(u);
-    this.writePasswordForSavedUser(password);
-    return true;
+    return this.http.post<AuthResponse>(`${this.api}/auth/register`, payload).pipe(
+      tap((res) => {
+        this.user = res.user;
+        this.token = res.token;
+        this.writeUser(res.user);
+        this.writeToken(res.token);
+      })
+    );
   }
 
   logout(): void {
     this.user = null;
-    this.clearUser();
+    this.token = null;
+    this.clearAuth();
   }
 
   private canUseStorage(): boolean {
@@ -90,9 +99,8 @@ export class AuthService {
   private readUser(): User | null {
     if (!this.canUseStorage()) return null;
     try {
-      const raw = localStorage.getItem(this.storageKey);
-      if (!raw) return null;
-      return JSON.parse(raw) as User;
+      const raw = localStorage.getItem(this.userKey);
+      return raw ? (JSON.parse(raw) as User) : null;
     } catch {
       return null;
     }
@@ -100,22 +108,22 @@ export class AuthService {
 
   private writeUser(u: User): void {
     if (!this.canUseStorage()) return;
-    localStorage.setItem(this.storageKey, JSON.stringify(u));
+    localStorage.setItem(this.userKey, JSON.stringify(u));
   }
 
-  private clearUser(): void {
-    if (!this.canUseStorage()) return;
-    localStorage.removeItem(this.storageKey);
-    localStorage.removeItem(this.storageKey + '_pw');
-  }
-
-  private readPasswordForSavedUser(): string | null {
+  private readToken(): string | null {
     if (!this.canUseStorage()) return null;
-    return localStorage.getItem(this.storageKey + '_pw');
+    return localStorage.getItem(this.tokenKey);
   }
 
-  private writePasswordForSavedUser(pw: string): void {
+  private writeToken(t: string): void {
     if (!this.canUseStorage()) return;
-    localStorage.setItem(this.storageKey + '_pw', pw);
+    localStorage.setItem(this.tokenKey, t);
+  }
+
+  private clearAuth(): void {
+    if (!this.canUseStorage()) return;
+    localStorage.removeItem(this.userKey);
+    localStorage.removeItem(this.tokenKey);
   }
 }

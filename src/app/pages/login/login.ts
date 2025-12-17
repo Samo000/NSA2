@@ -12,17 +12,43 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './login.scss'
 })
 export class LoginComponent {
-  email = 'test@techmarket.si';
-  password = 'Test123!';
+  email = '';
+  password = '';
   show = false;
+
   error = '';
+  loading = false;
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router
+  ) {}
 
-  submit() {
+  submit(): void {
     this.error = '';
-    const ok = this.auth.login(this.email, this.password);
-    if (ok) this.router.navigateByUrl('/cart');
-    else this.error = 'Napačen e-poštni naslov ali geslo.';
+
+    if (!this.email.trim() || !this.password) {
+      this.error = 'Vnesi e-pošto in geslo.';
+      return;
+    }
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim());
+    if (!emailOk) {
+      this.error = 'E-pošta ni veljavna.';
+      return;
+    }
+
+    this.loading = true;
+
+    this.auth.login(this.email, this.password).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigateByUrl('/cart');
+      },
+      error: (e) => {
+        this.loading = false;
+        this.error = e?.error?.message || 'Napačen e-poštni naslov ali geslo.';
+      }
+    });
   }
 }
