@@ -1,12 +1,13 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { ProductImage, FEATURED_PRODUCTS } from '../../../models/image.model';
 
 @Component({
   selector: 'app-hero-section',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './hero-section.html',
   styleUrl: './hero-section.scss'
 })
@@ -15,6 +16,7 @@ export class HeroSectionComponent implements OnInit, OnDestroy {
   index = 0;
 
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
   private timer: ReturnType<typeof setInterval> | null = null;
   private readonly intervalMs = 3200;
 
@@ -54,6 +56,10 @@ export class HeroSectionComponent implements OnInit, OnDestroy {
   goTo(i: number): void {
     this.index = i;
     if (isPlatformBrowser(this.platformId)) this.start();
+  }
+
+  open(slug: string): void {
+    this.router.navigate(['/product', slug]);
   }
 
   trackBySlug(_: number, s: ProductImage): string {

@@ -32,8 +32,8 @@
           </ul>
         </div>
 
-        <div class="actions">
-          <button class="btn primary" type="button">
+                <div class="actions" *ngIf="product() as p">
+          <button class="btn primary" type="button" (click)="add(p)">
             <i class="fa-solid fa-cart-shopping"></i>
             Dodaj v košarico
           </button>
@@ -48,6 +48,7 @@
             <i class="fa-solid fa-arrow-right"></i>
           </a>
         </div>
+
       </div>
     </div>
 

@@ -2,6 +2,7 @@ import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductImage, FEATURED_PRODUCTS } from '../../models/image.model';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-product-page',
@@ -19,7 +20,11 @@ export class ProductPageComponent {
     return this.all.find(p => p.slug === s) ?? null;
   });
 
-  constructor(route: ActivatedRoute) {
+  constructor(route: ActivatedRoute, public cart: CartService) {
     route.paramMap.subscribe(p => this.slug.set(p.get('slug') ?? ''));
+  }
+
+  add(p: ProductImage) {
+    this.cart.addProduct(p, 1);
   }
 }

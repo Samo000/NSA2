@@ -1,18 +1,112 @@
-<section class="cart-page">
-  <div class="cart-wrap">
-    <h1>Košarica</h1>
+<section class="cart">
+  <div class="container">
 
-    <div class="empty" *ngIf="cart.items.length === 0">
-      Košarica je prazna
-    </div>
+    <header class="cart-header">
+      <h1>Košarica</h1>
+      <a routerLink="/" class="back">
+        <i class="fa-solid fa-arrow-left"></i>
+        Nazaj v trgovino
+      </a>
+    </header>
 
-    <div class="cart-item" *ngFor="let i of cart.items; let idx = index">
-      <span>{{ i }}</span>
-      <button (click)="cart.remove(idx)">Odstrani</button>
-    </div>
+    <ng-container *ngIf="cart.items().length > 0; else emptyCart">
 
-    <button class="clear" *ngIf="cart.items.length" (click)="cart.clear()">
-      Počisti košarico
-    </button>
+      <div class="cart-layout">
+
+        <div class="items">
+
+          <div class="item" *ngFor="let it of cart.items()">
+
+            <a class="product" [routerLink]="['/product', it.slug]">
+              <img [src]="it.src" [alt]="it.name">
+              <div class="info">
+                <strong>{{ it.name }}</strong>
+                <span>{{ it.price }}</span>
+              </div>
+            </a>
+
+            <div class="qty">
+              <button (click)="dec(it.slug, it.qty)">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+
+              <span>{{ it.qty }}</span>
+
+              <button (click)="inc(it.slug, it.qty)">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+
+            <div class="total">
+              {{ cart.formatEUR(cart.itemTotal(it)) }}
+
+              <button class="remove" (click)="remove(it.slug)">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <aside class="summary">
+
+          <h2>Povzetek</h2>
+
+          <div class="coupon">
+            <label>Koda za popust</label>
+            <div class="coupon-row">
+              <input
+                type="text"
+                placeholder="npr. koren5"
+                [(ngModel)]="code"
+              >
+              <button (click)="applyCoupon()">Uporabi</button>
+            </div>
+            <p class="msg" *ngIf="codeMsg">{{ codeMsg }}</p>
+          </div>
+
+          <div class="prices">
+            <div>
+              <span>Vmesna vsota</span>
+              <strong>{{ cart.formatEUR(cart.subtotal()) }}</strong>
+            </div>
+
+            <div *ngIf="cart.discountRate() > 0">
+              <span>Popust</span>
+              <strong>-{{ cart.formatEUR(cart.discountAmount()) }}</strong>
+            </div>
+
+            <div class="final">
+              <span>Skupaj</span>
+              <strong>{{ cart.formatEUR(cart.total()) }}</strong>
+            </div>
+          </div>
+
+          <button class="checkout">
+            <i class="fa-solid fa-credit-card"></i>
+            Nadaljuj na plačilo
+          </button>
+
+          <button class="clear" (click)="clear()">
+            Počisti košarico
+          </button>
+
+        </aside>
+
+      </div>
+
+    </ng-container>
+
+    <ng-template #emptyCart>
+      <div class="empty">
+        <h2>Košarica je prazna</h2>
+        <p>Dodaj izdelek iz trgovine.</p>
+        <a routerLink="/" class="checkout">
+          Nazaj na izdelke
+        </a>
+      </div>
+    </ng-template>
+
   </div>
 </section>

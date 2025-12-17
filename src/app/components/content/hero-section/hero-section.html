@@ -15,8 +15,9 @@
       <div class="stage">
         <div class="slide"
              *ngFor="let s of slides; let i = index; trackBy: trackBySlug"
-             [class.is-active]="i === index">
-          <img [src]="s.src" [alt]="s.alt">
+             [class.is-active]="i === index"
+             (click)="open(s.slug)">
+          <img class="hero-img" [src]="s.src" [alt]="s.alt">
           <div class="shade"></div>
           <div class="caption">
             <div class="name">{{ s.name }}</div>
