@@ -1,15 +1,23 @@
 require('dotenv').config();
-
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const cors = require('cors');
 
 const app = express();
 
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: '1mb' }));
+app.use(cors({ origin: process.env.CLIENT_ORIGIN }));
+app.use(express.json());
+
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => console.log('MongoDB connected'));
+
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/listings', require('./routes/listings'));
+app.use('/api/bids', require('./routes/bids'));
+
+app.listen(process.env.PORT, () =>
+  console.log(`Server running on port ${process.env.PORT}`)
+);
 
 const MONGO_URL = process.env.MONGO_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -143,3 +151,5 @@ app.get('/api/me', auth, async (req, res) => {
 
 const PORT = Number(process.env.PORT || 3000);
 app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+
+app.use('/api/admin', require('./routes/admin'));

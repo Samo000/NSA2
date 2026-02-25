@@ -1,1 +1,64 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #07090d;
+  color: #e6f7f1;
+}
+
+.page-container {
+  padding: 140px 3rem 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.section-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  letter-spacing: .5px;
+}
+
+.soft-card {
+  background: #0f141c;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 25px rgba(0,0,0,.4);
+  transition: all .25s ease;
+}
+
+.soft-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0,255,179,.25);
+}
+
+.input-field {
+  background: #11161f;
+  border: 1px solid #1e2a35;
+  padding: .8rem 1rem;
+  border-radius: 12px;
+  color: white;
+  width: 100%;
+  transition: .2s ease;
+}
+
+.input-field:focus {
+  border-color: #00ffb3;
+  outline: none;
+}
+
+.btn-primary {
+  background: #00ffb3;
+  border: none;
+  padding: .8rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.btn-primary:hover {
+  background: #00e6a2;
+  transform: translateY(-2px);
+}

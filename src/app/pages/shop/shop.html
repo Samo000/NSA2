@@ -1,0 +1,47 @@
+<div class="page-container shop-page">
+
+  <div class="shop-header">
+    <h1>Vsi izdelki</h1>
+
+    <div class="shop-controls">
+
+      <input
+        class="input-field"
+        placeholder="Išči izdelek..."
+        [(ngModel)]="search"
+      />
+
+      <select
+        class="input-field"
+        [(ngModel)]="sort"
+      >
+        <option value="default">Privzeto</option>
+        <option value="low">Cena: najnižja</option>
+        <option value="high">Cena: najvišja</option>
+      </select>
+
+    </div>
+  </div>
+
+  <div class="product-grid">
+
+    <div
+      class="product-card"
+      *ngFor="let p of filteredProducts()"
+      [routerLink]="'/product/' + p.slug"
+    >
+
+      <div class="image-wrapper">
+        <img [src]="p.src" [alt]="p.alt" />
+      </div>
+
+      <div class="product-info">
+        <h3>{{ p.name }}</h3>
+        <div class="price">{{ p.price }}</div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

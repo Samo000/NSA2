@@ -6,9 +6,10 @@
 
     <nav class="nav">
       <a routerLink="/">Domov</a>
-      <a routerLink="/" fragment="products">Izdelki</a>
-      <a routerLink="/" fragment="about">O nas</a>
-      <a routerLink="/" fragment="contact">Kontakt</a>
+      <a routerLink="/izdelki">Izdelki</a>
+      <a routerLink="/o-nas">O nas</a>
+      <a routerLink="/kontakt">Kontakt</a>
+      <a *ngIf="auth.getUser()?.role === 'admin'" routerLink="/admin">Admin</a>
     </nav>
 
     <div class="actions">

@@ -4,12 +4,12 @@ import { isPlatformBrowser } from '@angular/common';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-export type User = {
-  id?: string;
+type User = {
   firstName: string;
   lastName: string;
   email: string;
-  birthDate?: string;
+  birthDate: string;
+  role: 'user' | 'admin';
 };
 
 type AuthResponse = {

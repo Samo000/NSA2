@@ -1,0 +1,25 @@
+.admin {
+  padding: 140px 2rem 3rem;
+  background: #07090d;
+  color: #fff;
+  min-height: 100vh;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.box {
+  background: #11161f;
+  padding: 2rem;
+  border-radius: 20px;
+  text-align: center;
+  transition: .2s ease;
+}
+
+.box:hover {
+  transform: scale(1.03);
+  box-shadow: 0 20px 40px rgba(0,255,179,.2);
+}
