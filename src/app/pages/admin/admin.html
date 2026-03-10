@@ -1,9 +1,160 @@
-<section class="admin">
-  <h1>Admin Panel</h1>
+<section class="admin-page">
+  <div class="admin-backdrop" aria-hidden="true"></div>
 
-  <div class="admin-grid">
-    <div class="box">Uporabniki</div>
-    <div class="box">Izdelki</div>
-    <div class="box">Bidi</div>
-  </div>
+  <header class="admin-header">
+    <div>
+      <p class="eyebrow">Control Center</p>
+      <h1>Admin Command Panel</h1>
+      <p class="subtitle">Dark-mode inventory operations, user oversight, and live stock controls.</p>
+    </div>
+    <button class="ghost-btn" type="button" (click)="refreshAll()">Refresh all data</button>
+  </header>
+
+  <p class="status" *ngIf="statsLoading">Loading dashboard stats...</p>
+
+  <section class="kpi-grid" *ngIf="!statsLoading">
+    <article class="kpi-card"><p class="kpi-label">Users</p><p class="kpi-value">{{ stats.totalUsers }}</p></article>
+    <article class="kpi-card"><p class="kpi-label">Products</p><p class="kpi-value">{{ stats.totalProducts }}</p></article>
+    <article class="kpi-card"><p class="kpi-label">Listings</p><p class="kpi-value">{{ stats.totalListings }}</p></article>
+    <article class="kpi-card"><p class="kpi-label">Stock Units</p><p class="kpi-value">{{ stats.totalStockUnits }}</p></article>
+    <article class="kpi-card"><p class="kpi-label">Inventory Value</p><p class="kpi-value small">{{ inventoryValueLabel }}</p></article>
+    <article class="kpi-card"><p class="kpi-label">Low Stock Items</p><p class="kpi-value">{{ stats.lowStockProducts }}</p></article>
+  </section>
+
+  <section class="panel inventory-panel">
+    <div class="panel-head">
+      <h2>Inventory</h2>
+      <p>All current products and listings with IDs and editable stock.</p>
+    </div>
+
+    <p class="status" *ngIf="inventoryLoading">Loading inventory...</p>
+    <p class="success" *ngIf="stockMessage">{{ stockMessage }}</p>
+    <p class="error" *ngIf="stockError">{{ stockError }}</p>
+
+    <div class="table-wrap" *ngIf="!inventoryLoading">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Save</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of inventory">
+            <td>{{ item.name }}</td>
+            <td class="mono">{{ item.id }}</td>
+            <td>
+              <span class="source-pill" [class.listing]="item.source === 'listing'">
+                {{ item.source === 'listing' ? 'Listing' : 'Product' }}
+              </span>
+            </td>
+            <td>{{ formatCurrency(item.price) }}</td>
+            <td>
+              <input
+                class="stock-input"
+                type="number"
+                min="0"
+                step="1"
+                [(ngModel)]="stockDraft[stockKey(item)]"
+              />
+            </td>
+            <td>
+              <button
+                type="button"
+                class="mini-btn"
+                [disabled]="stockSaving[stockKey(item)]"
+                (click)="updateStock(item)"
+              >
+                {{ stockSaving[stockKey(item)] ? 'Saving...' : 'Update' }}
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="inventory.length === 0">
+            <td colspan="6" class="empty">No inventory items found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel create-panel">
+    <div class="panel-head">
+      <h2>Add Product</h2>
+      <p>Creates a product and places it directly into inventory.</p>
+    </div>
+
+    <div class="product-form-grid">
+      <input type="text" [(ngModel)]="productName" placeholder="Product name" />
+      <input type="number" [(ngModel)]="productPrice" placeholder="Price" min="0" step="0.01" />
+      <input type="number" [(ngModel)]="productStock" placeholder="Stock" min="0" step="1" />
+      <input type="text" [(ngModel)]="productImage" placeholder="Image URL" />
+      <textarea [(ngModel)]="productDescription" placeholder="Description"></textarea>
+      <label class="toggle-row">
+        <input type="checkbox" [(ngModel)]="productAuction" /> Auction product
+      </label>
+    </div>
+
+    <button type="button" (click)="addProduct()" [disabled]="creatingProduct">
+      {{ creatingProduct ? 'Creating...' : 'Create product' }}
+    </button>
+
+    <p class="success" *ngIf="productMessage">{{ productMessage }}</p>
+    <p class="error" *ngIf="productError">{{ productError }}</p>
+  </section>
+
+  <section class="panel user-panel">
+    <div class="panel-head">
+      <h2>Users</h2>
+      <div class="filters">
+        <input type="text" [(ngModel)]="userSearch" placeholder="Search by name or email" aria-label="Search users" />
+        <select [(ngModel)]="selectedRole" aria-label="Filter role">
+          <option value="all">All roles</option>
+          <option value="admin">Admins</option>
+          <option value="user">Users</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="status" *ngIf="usersLoading">Loading users...</p>
+
+    <div class="table-wrap" *ngIf="!usersLoading">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>Role</th><th>Created</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of filteredUsers">
+            <td>{{ user.firstName }} {{ user.lastName }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              <span class="role-pill" [class.admin]="(user.role ?? 'user') === 'admin'">
+                {{ (user.role ?? 'user') === 'admin' ? 'Admin' : 'User' }}
+              </span>
+            </td>
+            <td>{{ formatDate(user.createdAt) }}</td>
+          </tr>
+          <tr *ngIf="filteredUsers.length === 0">
+            <td colspan="4" class="empty">No users found for this filter.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel maintenance-panel">
+    <h2>Maintenance</h2>
+    <p>Delete a listing by ID.</p>
+
+    <div class="maintenance-form">
+      <input type="text" [(ngModel)]="deleteListingId" placeholder="Listing ID" aria-label="Listing ID" />
+      <button type="button" (click)="deleteListingById()">Delete listing</button>
+    </div>
+
+    <p class="success" *ngIf="maintenanceMessage">{{ maintenanceMessage }}</p>
+    <p class="error" *ngIf="maintenanceError">{{ maintenanceError }}</p>
+  </section>
 </section>

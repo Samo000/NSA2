@@ -1,0 +1,43 @@
+<button
+  type="button"
+  class="help-toggle"
+  (click)="toggle()"
+  [attr.aria-expanded]="isOpen"
+  aria-label="Open help assistant"
+>
+  <span class="help-toggle__dot"></span>
+  Need help?
+</button>
+
+<section class="help-chat" *ngIf="isOpen">
+  <header class="help-chat__header">
+    <div>
+      <strong>Help AI</strong>
+      <p>Ask me anything about this store.</p>
+    </div>
+    <button type="button" (click)="toggle()" aria-label="Close help chat">x</button>
+  </header>
+
+  <div class="help-chat__messages" #messagesContainer>
+    <div
+      class="help-chat__message"
+      [class.help-chat__message--user]="message.role === 'user'"
+      *ngFor="let message of messages"
+    >
+      {{ message.text }}
+    </div>
+
+    <div class="help-chat__typing" *ngIf="isTyping">AI is typing...</div>
+  </div>
+
+  <form class="help-chat__composer" (submit)="$event.preventDefault(); sendMessage()">
+    <input
+      type="text"
+      name="chatInput"
+      [(ngModel)]="input"
+      placeholder="Type your question..."
+      autocomplete="off"
+    />
+    <button type="submit" [disabled]="!input.trim() || isTyping">Send</button>
+  </form>
+</section>

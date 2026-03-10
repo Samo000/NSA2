@@ -9,6 +9,7 @@
       <a routerLink="/izdelki">Izdelki</a>
       <a routerLink="/o-nas">O nas</a>
       <a routerLink="/kontakt">Kontakt</a>
+      <a routerLink="/wishlist">Wishlist</a>
       <a *ngIf="auth.getUser()?.role === 'admin'" routerLink="/admin">Admin</a>
     </nav>
 
@@ -23,9 +24,10 @@
         Registracija
       </a>
 
-      <a *ngIf="auth.isLoggedIn()" routerLink="/cart">
+      <a *ngIf="auth.isLoggedIn()" routerLink="/cart" class="cart-link">
         <i class="fa-solid fa-cart-shopping"></i>
-        Košarica
+        Kosarica
+        <span class="cart-badge" *ngIf="cart.items().length > 0">{{ cart.items().length }}</span>
       </a>
 
       <button *ngIf="auth.isLoggedIn()" type="button" (click)="logout()">

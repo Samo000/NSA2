@@ -48,6 +48,17 @@ body {
   outline: none;
 }
 
+/* Keep native select popups legible and aligned with the dark UI. */
+select {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  color: CanvasText;
+  background-color: Canvas;
+}
+
 .btn-primary {
   background: #00ffb3;
   border: none;

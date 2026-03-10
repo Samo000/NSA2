@@ -43,7 +43,8 @@ export class LoginComponent {
     this.auth.login(this.email, this.password).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigateByUrl('/cart');
+        const user = this.auth.getUser();
+        this.router.navigateByUrl(user?.role === 'admin' ? '/admin' : '/cart');
       },
       error: (e) => {
         this.loading = false;

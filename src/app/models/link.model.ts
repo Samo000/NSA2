@@ -1,6 +1,7 @@
 export interface Link {
   text: string;
-  href: string;
+  path?: string;
+  href?: string;
   icon?: string;
   external?: boolean;
 }
@@ -8,22 +9,22 @@ export interface Link {
 export const FOOTER_LINKS: Link[] = [
   {
     text: 'O nas',
-    href: '#about',
+    path: '/o-nas',
     icon: 'fa-solid fa-circle-info'
   },
   {
     text: 'Pogoji uporabe',
-    href: '#terms',
+    path: '/pogoji-uporabe',
     icon: 'fa-solid fa-file-lines'
   },
   {
     text: 'Zasebnost',
-    href: '#privacy',
+    path: '/zasebnost',
     icon: 'fa-solid fa-shield-halved'
   },
   {
     text: 'Kontakt',
-    href: '#contact',
+    path: '/kontakt',
     icon: 'fa-solid fa-envelope'
   }
 ];

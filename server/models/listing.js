@@ -8,6 +8,7 @@ const listingSchema = new mongoose.Schema({
   seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   type: { type: String, enum: ['buyNow', 'auction'] },
   price: Number,
+  stock: { type: Number, default: 0 },
   currentBid: Number,
   buyoutPrice: Number,
   auctionEnd: Date,

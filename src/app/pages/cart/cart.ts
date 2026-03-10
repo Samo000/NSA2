@@ -14,6 +14,27 @@ import { CartService } from '../../services/cart.service';
 export class CartComponent {
   code = '';
   codeMsg = '';
+  checkoutError = '';
+  checkoutSuccess = '';
+  processing = false;
+  orderNumber = '';
+
+  checkout = {
+    email: '',
+    fullName: '',
+    phone: '',
+    address: '',
+    city: '',
+    postalCode: '',
+    country: 'Slovenia',
+    shipping: 'standard',
+    payment: 'card',
+    cardName: '',
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvc: '',
+    acceptedTerms: false
+  };
 
   constructor(public cart: CartService) {}
 
@@ -36,5 +57,58 @@ export class CartComponent {
 
   clear(): void {
     this.cart.clear();
+    this.checkoutError = '';
+    this.checkoutSuccess = '';
+    this.orderNumber = '';
+  }
+
+  checkoutDisabled(): boolean {
+    if (this.processing || this.cart.items().length === 0) return true;
+
+    const baseMissing =
+      !this.checkout.email.trim() ||
+      !this.checkout.fullName.trim() ||
+      !this.checkout.phone.trim() ||
+      !this.checkout.address.trim() ||
+      !this.checkout.city.trim() ||
+      !this.checkout.postalCode.trim() ||
+      !this.checkout.country.trim() ||
+      !this.checkout.acceptedTerms;
+
+    if (baseMissing) return true;
+
+    if (this.checkout.payment !== 'card') return false;
+
+    return (
+      !this.checkout.cardName.trim() ||
+      !this.checkout.cardNumber.trim() ||
+      !this.checkout.cardExpiry.trim() ||
+      !this.checkout.cardCvc.trim()
+    );
+  }
+
+  confirmOrder(): void {
+    this.checkoutError = '';
+    this.checkoutSuccess = '';
+
+    if (this.checkoutDisabled()) {
+      this.checkoutError = 'Please fill all required checkout fields.';
+      return;
+    }
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.checkout.email.trim());
+    if (!emailOk) {
+      this.checkoutError = 'Please enter a valid email address.';
+      return;
+    }
+
+    this.processing = true;
+
+    setTimeout(() => {
+      this.processing = false;
+      this.orderNumber = `TM-${Date.now().toString().slice(-8)}`;
+      this.checkoutSuccess = 'Order confirmed. This is a demo checkout. No payment was charged.';
+      this.cart.clear();
+    }, 1300);
   }
 }

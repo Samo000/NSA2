@@ -1,47 +1,96 @@
 <div class="page-container shop-page">
-
-  <div class="shop-header">
-    <h1>Vsi izdelki</h1>
+  <section class="shop-hero">
+    <div class="hero-copy">
+      <p class="eyebrow">IZDELKI</p>
+      <h1>Napredno iskanje izdelkov</h1>
+      <p class="hero-subtitle">Filtriraj po kategoriji, ceni, zalogi in ocenah.</p>
+    </div>
 
     <div class="shop-controls">
+      <label class="control control-search">
+        <span>Isci</span>
+        <input class="input-field" placeholder="Isci izdelek..." [(ngModel)]="search" />
+      </label>
 
-      <input
-        class="input-field"
-        placeholder="Išči izdelek..."
-        [(ngModel)]="search"
-      />
+      <label class="control">
+        <span>Razvrsti</span>
+        <select class="input-field" [(ngModel)]="sort">
+          <option value="default">Privzeto</option>
+          <option value="low">Cena: najnizja</option>
+          <option value="high">Cena: najvisja</option>
+          <option value="rating">Ocena: najboljsa</option>
+        </select>
+      </label>
 
-      <select
-        class="input-field"
-        [(ngModel)]="sort"
-      >
-        <option value="default">Privzeto</option>
-        <option value="low">Cena: najnižja</option>
-        <option value="high">Cena: najvišja</option>
-      </select>
+      <label class="control">
+        <span>Kategorija</span>
+        <select class="input-field" [(ngModel)]="selectedCategory">
+          <option value="all">Vse</option>
+          <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+        </select>
+      </label>
 
+      <label class="control">
+        <span>Min cena (EUR)</span>
+        <input class="input-field" type="number" min="0" [(ngModel)]="minPrice" />
+      </label>
+
+      <label class="control">
+        <span>Max cena (EUR)</span>
+        <input class="input-field" type="number" min="0" [(ngModel)]="maxPrice" />
+      </label>
+
+      <label class="control">
+        <span>Min ocena</span>
+        <select class="input-field" [(ngModel)]="minRating">
+          <option [ngValue]="0">Vse ocene</option>
+          <option [ngValue]="3">3+ zvezdice</option>
+          <option [ngValue]="4">4+ zvezdice</option>
+          <option [ngValue]="4.5">4.5+ zvezdice</option>
+        </select>
+      </label>
+
+      <label class="stock-check">
+        <input type="checkbox" [(ngModel)]="onlyInStock" />
+        <span>Samo izdelki na zalogi</span>
+      </label>
+
+      <button type="button" class="reset-btn" (click)="clearFilters()">Ponastavi filtre</button>
     </div>
+  </section>
+
+  <div class="results-row">
+    <p class="results-count">Rezultati: {{ filteredProducts().length }}</p>
   </div>
 
-  <div class="product-grid">
-
-    <div
+  <div class="product-grid" *ngIf="filteredProducts().length; else emptyState">
+    <article
       class="product-card"
-      *ngFor="let p of filteredProducts()"
+      *ngFor="let p of filteredProducts(); let i = index"
+      [style.animationDelay.ms]="i * 55"
       [routerLink]="'/product/' + p.slug"
     >
-
       <div class="image-wrapper">
         <img [src]="p.src" [alt]="p.alt" />
+        <span class="category-pill">{{ p.category }}</span>
       </div>
 
       <div class="product-info">
         <h3>{{ p.name }}</h3>
+        <div class="meta">
+          <span class="rating"><i class="fa-solid fa-star"></i> {{ p.rating | number: '1.1-1' }} ({{ p.ratingCount }})</span>
+          <span class="stock" [class.out]="p.stock <= 0">{{ p.stock > 0 ? 'Na zalogi' : 'Ni na zalogi' }}</span>
+        </div>
         <div class="price">{{ p.price }}</div>
       </div>
-
-    </div>
-
+    </article>
   </div>
 
+  <ng-template #emptyState>
+    <section class="empty-state">
+      <h3>Ni zadetkov za izbrane filtre</h3>
+      <p>Poskusi razsiriti cenovni razpon ali odstrani posamezen filter.</p>
+      <button type="button" class="reset-btn" (click)="clearFilters()">Prikazi vse izdelke</button>
+    </section>
+  </ng-template>
 </div>

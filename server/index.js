@@ -2,22 +2,26 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
+const User = require('./models/user');
+const Listing = require('./models/listing');
+const Product = require('./models/product');
+const { featuredListingsSeed, featuredProductsSeed } = require('./data/featured-catalog');
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN }));
+app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
-mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log('MongoDB connected'));
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/listings', require('./routes/listings'));
-app.use('/api/bids', require('./routes/bids'));
-
-app.listen(process.env.PORT, () =>
-  console.log(`Server running on port ${process.env.PORT}`)
-);
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/wishlist', require('./routes/wishlist'));
+app.use('/api/reviews', require('./routes/reviews'));
 
 const MONGO_URL = process.env.MONGO_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -25,131 +29,124 @@ const JWT_SECRET = process.env.JWT_SECRET;
 if (!MONGO_URL) throw new Error('Missing MONGO_URL in server/.env');
 if (!JWT_SECRET) throw new Error('Missing JWT_SECRET in server/.env');
 
+const defaultAdmin = {
+  firstName: process.env.ADMIN_FIRST_NAME || 'System',
+  lastName: process.env.ADMIN_LAST_NAME || 'Admin',
+  email: (process.env.ADMIN_EMAIL || 'admin@techmarket.local').toLowerCase(),
+  password: process.env.ADMIN_PASSWORD || 'Admin123!Secure',
+  birthDate: process.env.ADMIN_BIRTH_DATE || '1990-01-01'
+};
+
+async function ensureDefaultAdmin() {
+  const existing = await User.findOne({ email: defaultAdmin.email });
+
+  if (!existing) {
+    const hash = await bcrypt.hash(defaultAdmin.password, 12);
+    await User.create({
+      firstName: defaultAdmin.firstName,
+      lastName: defaultAdmin.lastName,
+      email: defaultAdmin.email,
+      password: hash,
+      birthDate: defaultAdmin.birthDate,
+      role: 'admin'
+    });
+
+    console.log(`Default admin created: ${defaultAdmin.email}`);
+    return;
+  }
+
+  if (existing.role !== 'admin') {
+    existing.role = 'admin';
+    await existing.save();
+  }
+}
+
+async function ensureListingStockField() {
+  await Listing.updateMany({ stock: { $exists: false } }, { $set: { stock: 0 } });
+}
+
+async function ensureFeaturedListings() {
+  const operations = featuredListingsSeed.map((item) => ({
+    updateOne: {
+      filter: { slug: item.slug },
+      update: {
+        $setOnInsert: {
+          title: item.title,
+          slug: item.slug,
+          price: item.price,
+          stock: 10,
+          type: 'buyNow',
+          category: 'featured',
+          description: `${item.title} from featured catalog.`,
+          images: []
+        }
+      },
+      upsert: true
+    }
+  }));
+
+  const result = await Listing.bulkWrite(operations, { ordered: false });
+  const inserted = Number(result.upsertedCount || 0);
+
+  if (inserted > 0) {
+    console.log(`Seeded ${inserted} featured listings into inventory.`);
+  }
+}
+
+async function ensureFeaturedProducts() {
+  const operations = featuredProductsSeed.map((item) => ({
+    updateOne: {
+      filter: { slug: item.slug },
+      update: {
+        $setOnInsert: {
+          name: item.name,
+          slug: item.slug,
+          category: item.category,
+          price: item.price,
+          stock: item.stock,
+          description: item.description,
+          image: item.image,
+          specs: item.specs,
+          rating: item.rating,
+          ratingCount: item.ratingCount,
+          isAuction: false
+        }
+      },
+      upsert: true
+    }
+  }));
+
+  const result = await Product.bulkWrite(operations, { ordered: false });
+  const inserted = Number(result.upsertedCount || 0);
+
+  if (inserted > 0) {
+    console.log(`Seeded ${inserted} featured products into catalog.`);
+  }
+}
+
+async function removeLegacyBidsCollection() {
+  const collections = await mongoose.connection.db.listCollections({ name: 'bids' }).toArray();
+  if (!collections.length) return;
+
+  await mongoose.connection.db.dropCollection('bids');
+  console.log('Removed legacy bids collection.');
+}
+
 mongoose
   .connect(MONGO_URL, { autoIndex: true })
-  .then(() => console.log('MongoDB connected'))
+  .then(async () => {
+    console.log('MongoDB connected');
+    await removeLegacyBidsCollection();
+    await ensureDefaultAdmin();
+    await ensureListingStockField();
+    await ensureFeaturedListings();
+    await ensureFeaturedProducts();
+
+    const PORT = Number(process.env.PORT || 3000);
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
   .catch((err) => {
     console.error('MongoDB connection error:', err);
     process.exit(1);
   });
 
-const UserSchema = new mongoose.Schema(
-  {
-    firstName: { type: String, required: true, trim: true, minlength: 2, maxlength: 40 },
-    lastName: { type: String, required: true, trim: true, minlength: 2, maxlength: 60 },
-    email: { type: String, required: true, unique: true, trim: true, lowercase: true, maxlength: 120 },
-    passwordHash: { type: String, required: true },
-    birthDate: { type: Date, required: true }
-  },
-  { timestamps: true }
-);
-
-UserSchema.index({ email: 1 }, { unique: true });
-
-const User = mongoose.model('User', UserSchema);
-
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
-}
-
-function auth(req, res, next) {
-  const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
-  if (!token) return res.status(401).json({ message: 'Missing token' });
-
-  try {
-    req.user = jwt.verify(token, JWT_SECRET);
-    return next();
-  } catch {
-    return res.status(401).json({ message: 'Invalid token' });
-  }
-}
-
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
-
-app.post('/api/auth/register', async (req, res) => {
-  try {
-    const firstName = String(req.body.firstName || '').trim();
-    const lastName = String(req.body.lastName || '').trim();
-    const email = String(req.body.email || '').trim().toLowerCase();
-    const password = String(req.body.password || '');
-    const confirmPassword = String(req.body.confirmPassword || '');
-    const birthDateRaw = String(req.body.birthDate || '').trim();
-
-    if (!firstName || !lastName || !email || !password || !confirmPassword || !birthDateRaw) {
-      return res.status(400).json({ message: 'Missing fields' });
-    }
-    if (!isValidEmail(email)) return res.status(400).json({ message: 'Invalid email' });
-    if (password.length < 8) return res.status(400).json({ message: 'Password must be at least 8 characters' });
-    if (password !== confirmPassword) return res.status(400).json({ message: 'Passwords do not match' });
-
-    const birthDate = new Date(birthDateRaw);
-    if (Number.isNaN(birthDate.getTime())) return res.status(400).json({ message: 'Invalid birthDate' });
-
-    const exists = await User.findOne({ email }).lean();
-    if (exists) return res.status(409).json({ message: 'User already exists' });
-
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    const user = await User.create({
-      firstName,
-      lastName,
-      email,
-      passwordHash,
-      birthDate
-    });
-
-    const token = jwt.sign(
-      { userId: user._id.toString(), email: user.email, firstName: user.firstName, lastName: user.lastName },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    return res.status(201).json({
-      token,
-      user: { id: user._id.toString(), firstName: user.firstName, lastName: user.lastName, email: user.email }
-    });
-  } catch (err) {
-    return res.status(500).json({ message: 'Server error' });
-  }
-});
-
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const email = String(req.body.email || '').trim().toLowerCase();
-    const password = String(req.body.password || '');
-
-    if (!email || !password) return res.status(400).json({ message: 'Missing fields' });
-    if (!isValidEmail(email)) return res.status(400).json({ message: 'Invalid email' });
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
-
-    const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
-
-    const token = jwt.sign(
-      { userId: user._id.toString(), email: user.email, firstName: user.firstName, lastName: user.lastName },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    return res.json({
-      token,
-      user: { id: user._id.toString(), firstName: user.firstName, lastName: user.lastName, email: user.email }
-    });
-  } catch {
-    return res.status(500).json({ message: 'Server error' });
-  }
-});
-
-app.get('/api/me', auth, async (req, res) => {
-  const user = await User.findById(req.user.userId).select('firstName lastName email birthDate createdAt').lean();
-  if (!user) return res.status(404).json({ message: 'Not found' });
-  return res.json({ user: { ...user, id: user._id.toString() } });
-});
-
-const PORT = Number(process.env.PORT || 3000);
-app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
-
-app.use('/api/admin', require('./routes/admin'));

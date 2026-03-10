@@ -5,58 +5,92 @@ const User = require('../models/user');
 
 function signToken(user) {
   return jwt.sign(
-    { id: user._id, email: user.email },
+    {
+      id: user._id,
+      email: user.email,
+      role: user.role || 'user',
+      firstName: user.firstName,
+      lastName: user.lastName
+    },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
   );
 }
 
+function toAuthPayload(user) {
+  return {
+    token: signToken(user),
+    user: {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      birthDate: user.birthDate,
+      role: user.role || 'user'
+    }
+  };
+}
+
 router.post('/register', async (req, res) => {
-  const { firstName, lastName, email, password, confirmPassword, birthDate } = req.body;
+  try {
+    const { firstName, lastName, email, password, confirmPassword, birthDate } = req.body;
 
-  if (!firstName || !lastName || !email || !password || !confirmPassword || !birthDate) {
-    return res.status(400).json({ message: 'Missing fields' });
+    if (!firstName || !lastName || !email || !password || !confirmPassword || !birthDate) {
+      return res.status(400).json({ message: 'Missing fields' });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const exists = await User.findOne({ email: normalizedEmail });
+    if (exists) return res.status(409).json({ message: 'User already exists' });
+
+    const hash = await bcrypt.hash(password, 12);
+
+    const user = await User.create({
+      firstName: String(firstName).trim(),
+      lastName: String(lastName).trim(),
+      email: normalizedEmail,
+      password: hash,
+      birthDate,
+      role: 'user'
+    });
+
+    const payload = toAuthPayload(user);
+    res.cookie('token', payload.token, { httpOnly: true, sameSite: 'lax' });
+
+    return res.status(201).json(payload);
+  } catch {
+    return res.status(500).json({ message: 'Registration failed' });
   }
-
-  if (password !== confirmPassword) {
-    return res.status(400).json({ message: 'Passwords do not match' });
-  }
-
-  const exists = await User.findOne({ email });
-  if (exists) return res.status(409).json({ message: 'User already exists' });
-
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  const user = await User.create({
-    firstName,
-    lastName,
-    email,
-    passwordHash,
-    birthDate
-  });
-
-  const token = signToken(user);
-  res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
-
-  res.json({ message: 'Registered', user: { email: user.email } });
 });
 
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Missing fields' });
+    }
 
-  const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
-  const token = signToken(user);
-  res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+    const ok = await bcrypt.compare(String(password), String(user.password || ''));
+    if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
 
-  res.json({ message: 'Logged in', user: { email: user.email } });
+    const payload = toAuthPayload(user);
+    res.cookie('token', payload.token, { httpOnly: true, sameSite: 'lax' });
+
+    return res.json(payload);
+  } catch {
+    return res.status(500).json({ message: 'Login failed' });
+  }
 });
 
-router.post('/logout', (_, res) => {
+router.post('/logout', (_req, res) => {
   res.cookie('token', '', { maxAge: 0 });
   res.json({ message: 'Logged out' });
 });

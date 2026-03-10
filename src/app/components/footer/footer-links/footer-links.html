@@ -1,8 +1,15 @@
 <ul class="footer-links">
   <li *ngFor="let l of links">
-    <a [href]="l.href" [attr.target]="l.external ? '_blank' : null" rel="noopener">
+    <a *ngIf="l.path; else externalLink" [routerLink]="l.path">
       <i *ngIf="l.icon" [class]="l.icon"></i>
       <span>{{ l.text }}</span>
     </a>
+
+    <ng-template #externalLink>
+      <a [href]="l.href || '#'" [attr.target]="l.external ? '_blank' : null" rel="noopener">
+        <i *ngIf="l.icon" [class]="l.icon"></i>
+        <span>{{ l.text }}</span>
+      </a>
+    </ng-template>
   </li>
 </ul>

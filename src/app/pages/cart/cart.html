@@ -1,8 +1,7 @@
 <section class="cart">
   <div class="container">
-
     <header class="cart-header">
-      <h1>Košarica</h1>
+      <h1>Kosarica</h1>
       <a routerLink="/" class="back">
         <i class="fa-solid fa-arrow-left"></i>
         Nazaj v trgovino
@@ -10,15 +9,11 @@
     </header>
 
     <ng-container *ngIf="cart.items().length > 0; else emptyCart">
-
       <div class="cart-layout">
-
         <div class="items">
-
           <div class="item" *ngFor="let it of cart.items()">
-
             <a class="product" [routerLink]="['/product', it.slug]">
-              <img [src]="it.src" [alt]="it.name">
+              <img [src]="it.src" [alt]="it.name" />
               <div class="info">
                 <strong>{{ it.name }}</strong>
                 <span>{{ it.price }}</span>
@@ -29,9 +24,7 @@
               <button (click)="dec(it.slug, it.qty)">
                 <i class="fa-solid fa-minus"></i>
               </button>
-
               <span>{{ it.qty }}</span>
-
               <button (click)="inc(it.slug, it.qty)">
                 <i class="fa-solid fa-plus"></i>
               </button>
@@ -43,23 +36,17 @@
                 <i class="fa-solid fa-trash"></i>
               </button>
             </div>
-
           </div>
-
         </div>
 
         <aside class="summary">
-
           <h2>Povzetek</h2>
+          <p class="demo-note">Demo checkout only. Payment is simulated.</p>
 
           <div class="coupon">
             <label>Koda za popust</label>
             <div class="coupon-row">
-              <input
-                type="text"
-                placeholder="npr. koren5"
-                [(ngModel)]="code"
-              >
+              <input type="text" placeholder="npr. koren5" [(ngModel)]="code" />
               <button (click)="applyCoupon()">Uporabi</button>
             </div>
             <p class="msg" *ngIf="codeMsg">{{ codeMsg }}</p>
@@ -82,30 +69,66 @@
             </div>
           </div>
 
-          <button class="checkout">
+          <div class="checkout-form">
+            <h3>Podatki kupca</h3>
+
+            <div class="field-grid">
+              <input type="email" [(ngModel)]="checkout.email" placeholder="Email *" />
+              <input type="text" [(ngModel)]="checkout.fullName" placeholder="Full name *" />
+              <input type="text" [(ngModel)]="checkout.phone" placeholder="Phone *" />
+              <input type="text" [(ngModel)]="checkout.address" placeholder="Address *" />
+              <input type="text" [(ngModel)]="checkout.city" placeholder="City *" />
+              <input type="text" [(ngModel)]="checkout.postalCode" placeholder="Postal code *" />
+              <input type="text" [(ngModel)]="checkout.country" placeholder="Country *" />
+            </div>
+
+            <h3>Dostava</h3>
+            <select [(ngModel)]="checkout.shipping">
+              <option value="standard">Standard (2-4 days)</option>
+              <option value="express">Express (next day)</option>
+            </select>
+
+            <h3>Placilo</h3>
+            <select [(ngModel)]="checkout.payment">
+              <option value="card">Credit / Debit Card</option>
+              <option value="paypal">PayPal</option>
+              <option value="cod">Cash on Delivery</option>
+            </select>
+
+            <div class="field-grid" *ngIf="checkout.payment === 'card'">
+              <input type="text" [(ngModel)]="checkout.cardName" placeholder="Card holder *" />
+              <input type="text" [(ngModel)]="checkout.cardNumber" placeholder="Card number *" />
+              <input type="text" [(ngModel)]="checkout.cardExpiry" placeholder="MM/YY *" />
+              <input type="text" [(ngModel)]="checkout.cardCvc" placeholder="CVC *" />
+            </div>
+
+            <label class="terms">
+              <input type="checkbox" [(ngModel)]="checkout.acceptedTerms" />
+              <span>I accept terms and conditions.</span>
+            </label>
+          </div>
+
+          <p class="error-msg" *ngIf="checkoutError">{{ checkoutError }}</p>
+          <p class="ok-msg" *ngIf="checkoutSuccess">
+            {{ checkoutSuccess }} Order #: <strong>{{ orderNumber }}</strong>
+          </p>
+
+          <button class="checkout" [disabled]="checkoutDisabled()" (click)="confirmOrder()">
             <i class="fa-solid fa-credit-card"></i>
-            Nadaljuj na plačilo
+            {{ processing ? 'Processing...' : 'Confirm order' }}
           </button>
 
-          <button class="clear" (click)="clear()">
-            Počisti košarico
-          </button>
-
+          <button class="clear" (click)="clear()">Pocisti kosarico</button>
         </aside>
-
       </div>
-
     </ng-container>
 
     <ng-template #emptyCart>
       <div class="empty">
-        <h2>Košarica je prazna</h2>
+        <h2>Kosarica je prazna</h2>
         <p>Dodaj izdelek iz trgovine.</p>
-        <a routerLink="/" class="checkout">
-          Nazaj na izdelke
-        </a>
+        <a routerLink="/" class="checkout">Nazaj na izdelke</a>
       </div>
     </ng-template>
-
   </div>
 </section>

@@ -2,7 +2,7 @@ import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { tap } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 type User = {
   firstName: string;
@@ -28,6 +28,7 @@ export class AuthService {
 
   private user: User | null = null;
   private token: string | null = null;
+  readonly authChanges = new Subject<'login' | 'register' | 'logout'>();
 
   constructor() {
     this.user = this.readUser();
@@ -55,6 +56,7 @@ export class AuthService {
         this.token = res.token;
         this.writeUser(res.user);
         this.writeToken(res.token);
+        this.authChanges.next('login');
       })
     );
   }
@@ -82,6 +84,7 @@ export class AuthService {
         this.token = res.token;
         this.writeUser(res.user);
         this.writeToken(res.token);
+        this.authChanges.next('register');
       })
     );
   }
@@ -90,6 +93,7 @@ export class AuthService {
     this.user = null;
     this.token = null;
     this.clearAuth();
+    this.authChanges.next('logout');
   }
 
   private canUseStorage(): boolean {
