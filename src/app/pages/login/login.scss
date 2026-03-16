@@ -126,3 +126,11 @@ input:focus {
 .link:hover {
   text-decoration: underline;
 }
+
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}

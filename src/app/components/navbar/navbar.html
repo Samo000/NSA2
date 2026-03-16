@@ -1,43 +1,54 @@
 <header class="navbar">
   <div class="navbar__inner">
-    <a class="brand" routerLink="/">
+    <a class="brand" routerLink="/" aria-label="TechMarket" (click)="closeMenu()">
       <span>TechMarket</span>
     </a>
 
-    <nav class="nav">
-      <a routerLink="/">Domov</a>
-      <a routerLink="/izdelki">Izdelki</a>
-      <a routerLink="/o-nas">O nas</a>
-      <a routerLink="/kontakt">Kontakt</a>
-      <a routerLink="/wishlist">Wishlist</a>
-      <a *ngIf="auth.getUser()?.role === 'admin'" routerLink="/admin">Admin</a>
-    </nav>
-
-    <div class="actions">
-      <a *ngIf="!auth.isLoggedIn()" routerLink="/login">
-        <i class="fa-solid fa-right-to-bracket"></i>
-        Prijava
-      </a>
-
-      <a *ngIf="!auth.isLoggedIn()" class="primary" routerLink="/register">
-        <i class="fa-solid fa-user-plus"></i>
-        Registracija
-      </a>
-
-      <a *ngIf="auth.isLoggedIn()" routerLink="/cart" class="cart-link">
-        <i class="fa-solid fa-cart-shopping"></i>
-        Kosarica
-        <span class="cart-badge" *ngIf="cart.items().length > 0">{{ cart.items().length }}</span>
-      </a>
-
-      <button *ngIf="auth.isLoggedIn()" type="button" (click)="logout()">
-        <i class="fa-solid fa-right-from-bracket"></i>
-        Odjava
-      </button>
-    </div>
-
-    <button class="burger" type="button" aria-label="Menu">
-      <i class="fa-solid fa-bars"></i>
+    <button
+      class="burger"
+      type="button"
+      aria-label="Menu"
+      [attr.aria-expanded]="isMenuOpen"
+      (click)="toggleMenu()"
+    >
+      <i class="fa-solid" [ngClass]="isMenuOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
     </button>
+
+    <div class="menu-shell" [class.menu-shell--open]="isMenuOpen">
+      <nav class="nav" aria-label="Primary">
+        <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Domov</a>
+        <a routerLink="/izdelki" routerLinkActive="is-active" (click)="closeMenu()">Izdelki</a>
+        <a routerLink="/o-nas" routerLinkActive="is-active" (click)="closeMenu()">O nas</a>
+        <a routerLink="/kontakt" routerLinkActive="is-active" (click)="closeMenu()">Kontakt</a>
+        <a routerLink="/wishlist" routerLinkActive="is-active" (click)="closeMenu()">
+          Wishlist
+          <span class="pill" *ngIf="wishlist.savedSlugs().length > 0">{{ wishlist.savedSlugs().length }}</span>
+        </a>
+        <a *ngIf="auth.getUser()?.role === 'admin'" routerLink="/admin" routerLinkActive="is-active" (click)="closeMenu()">Admin</a>
+      </nav>
+
+      <div class="actions">
+        <a *ngIf="!auth.isLoggedIn()" routerLink="/login" routerLinkActive="is-active" (click)="closeMenu()">
+          <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+          Prijava
+        </a>
+
+        <a *ngIf="!auth.isLoggedIn()" class="primary" routerLink="/register" routerLinkActive="is-active" (click)="closeMenu()">
+          <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
+          Registracija
+        </a>
+
+        <a *ngIf="auth.isLoggedIn()" routerLink="/cart" class="cart-link" routerLinkActive="is-active" (click)="closeMenu()">
+          <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+          Kosarica
+          <span class="cart-badge" *ngIf="cart.items().length > 0">{{ cart.items().length }}</span>
+        </a>
+
+        <button *ngIf="auth.isLoggedIn()" type="button" (click)="logout()">
+          <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+          Odjava
+        </button>
+      </div>
+    </div>
   </div>
 </header>

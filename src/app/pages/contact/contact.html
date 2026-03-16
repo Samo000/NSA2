@@ -2,29 +2,33 @@
   <h1 class="section-title">Kontakt</h1>
   <div class="contact-layout">
     <div class="contact-info soft-card">
-      <h3>Kontaktni podatki</h3>
+      <h2>Kontaktni podatki</h2>
       <p>Email: support@auctionstore.com</p>
       <p>Telefon: +386 40 000 000</p>
       <p>Lokacija: Ljubljana, Slovenija</p>
-      <h4>Delovni čas</h4>
-      <p>Pon–Pet: 8:00 – 18:00</p>
-      <p>Sob: 9:00 – 13:00</p>
+      <h3>Delovni čas</h3>
+      <p>Pon-Pet: 8:00 - 18:00</p>
+      <p>Sob: 9:00 - 13:00</p>
       <div class="social-links">
-        <a href="#">Instagram</a>
-        <a href="#">LinkedIn</a>
-        <a href="#">Facebook</a>
+        <a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://facebook.com" target="_blank" rel="noopener">Facebook</a>
       </div>
     </div>
     <div class="contact-form-card soft-card">
-      <h3>Pošljite sporočilo</h3>
+      <h2>Pošljite sporočilo</h2>
       <form class="contact-form">
-        <input class="input-field" placeholder="Ime" />
-        <input class="input-field" placeholder="Email" />
-        <input class="input-field" placeholder="Telefon (neobvezno)" />
-        <textarea class="input-field" rows="5" placeholder="Vaše sporočilo"></textarea>
+        <label class="sr-only" for="contact-name">Ime</label>
+        <input id="contact-name" class="input-field" name="name" type="text" placeholder="Ime" />
+        <label class="sr-only" for="contact-email">Email</label>
+        <input id="contact-email" class="input-field" name="email" type="email" placeholder="Email" />
+        <label class="sr-only" for="contact-phone">Telefon (neobvezno)</label>
+        <input id="contact-phone" class="input-field" name="phone" type="tel" placeholder="Telefon (neobvezno)" />
+        <label class="sr-only" for="contact-message">Vaše sporočilo</label>
+        <textarea id="contact-message" class="input-field" name="message" rows="5" placeholder="Vaše sporočilo"></textarea>
         <div class="callback">
-          <label>
-            <input type="checkbox" />
+          <label for="contact-callback">
+            <input id="contact-callback" type="checkbox" />
             Želim povratni klic
           </label>
         </div>
@@ -37,11 +41,11 @@
   <section class="faq-section">
     <h2>Pogosta vprašanja</h2>
     <div class="faq-item soft-card">
-      <h4>Kako poteka nakup?</h4>
+      <h3>Kako poteka nakup?</h3>
       <p>Nakup poteka preko varnega sistema z zaščito kupca.</p>
     </div>
     <div class="faq-item soft-card">
-      <h4>Ali so licitacije varne?</h4>
+      <h3>Ali so licitacije varne?</h3>
       <p>Vsaka licitacija je preverjena in vezana na uporabniški račun.</p>
     </div>
   </section>

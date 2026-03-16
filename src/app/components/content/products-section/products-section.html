@@ -7,7 +7,7 @@
   <div class="grid">
     <a class="card" *ngFor="let p of products" [routerLink]="['/product', p.slug]">
       <div class="media">
-        <img [src]="p.src" [alt]="p.alt">
+        <img [src]="p.src" alt="">
       </div>
 
       <div class="meta">

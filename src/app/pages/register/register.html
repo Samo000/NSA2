@@ -7,43 +7,61 @@
 
     <div class="grid">
       <div class="field">
-        <input type="text" placeholder="Ime" [(ngModel)]="firstName" name="firstName">
+        <label class="sr-only" for="register-first-name">Ime</label>
+        <input id="register-first-name" type="text" placeholder="Ime" [(ngModel)]="firstName" name="firstName">
       </div>
 
       <div class="field">
-        <input type="text" placeholder="Priimek" [(ngModel)]="lastName" name="lastName">
+        <label class="sr-only" for="register-last-name">Priimek</label>
+        <input id="register-last-name" type="text" placeholder="Priimek" [(ngModel)]="lastName" name="lastName">
       </div>
 
       <div class="field full">
-        <input type="email" placeholder="E-pošta" [(ngModel)]="email" name="email">
+        <label class="sr-only" for="register-email">E-pošta</label>
+        <input id="register-email" type="email" placeholder="E-pošta" [(ngModel)]="email" name="email">
       </div>
 
       <div class="field">
+        <label class="sr-only" for="register-password">Geslo</label>
         <input
+          id="register-password"
           [type]="showPassword ? 'text' : 'password'"
           placeholder="Geslo"
           [(ngModel)]="password"
           name="password"
         >
-        <button type="button" class="icon-btn" (click)="showPassword = !showPassword" aria-label="Prikaži geslo">
-          <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+        <button
+          type="button"
+          class="icon-btn"
+          (click)="showPassword = !showPassword"
+          [attr.aria-label]="showPassword ? 'Skrij geslo' : 'Prikaži geslo'"
+          [attr.aria-pressed]="showPassword">
+          <i class="fa-solid" aria-hidden="true" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
         </button>
       </div>
 
       <div class="field">
+        <label class="sr-only" for="register-confirm-password">Potrditev gesla</label>
         <input
+          id="register-confirm-password"
           [type]="showConfirm ? 'text' : 'password'"
           placeholder="Potrditev gesla"
           [(ngModel)]="confirmPassword"
           name="confirmPassword"
         >
-        <button type="button" class="icon-btn" (click)="showConfirm = !showConfirm" aria-label="Prikaži potrditev gesla">
-          <i class="fa-solid" [ngClass]="showConfirm ? 'fa-eye-slash' : 'fa-eye'"></i>
+        <button
+          type="button"
+          class="icon-btn"
+          (click)="showConfirm = !showConfirm"
+          [attr.aria-label]="showConfirm ? 'Skrij potrditev gesla' : 'Prikaži potrditev gesla'"
+          [attr.aria-pressed]="showConfirm">
+          <i class="fa-solid" aria-hidden="true" [ngClass]="showConfirm ? 'fa-eye-slash' : 'fa-eye'"></i>
         </button>
       </div>
 
       <div class="field full">
-        <input type="date" [(ngModel)]="birthDate" name="birthDate">
+        <label class="sr-only" for="register-birth-date">Datum rojstva</label>
+        <input id="register-birth-date" type="date" [(ngModel)]="birthDate" name="birthDate">
       </div>
     </div>
 
