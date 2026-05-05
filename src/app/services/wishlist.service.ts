@@ -4,6 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from './auth.service';
 import { FEATURED_PRODUCTS, ProductImage } from '../models/image.model';
+import { injectApiBaseUrl } from './api-base';
 
 type WishlistResponse = {
   slugs: string[];
@@ -15,7 +16,7 @@ export class WishlistService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
   private readonly key = 'techmarket_saved_items_v1';
-  private readonly api = 'http://localhost:3000/api/wishlist';
+  private readonly api = `${injectApiBaseUrl()}/wishlist`;
   private readonly knownSlugs = new Set(FEATURED_PRODUCTS.map((item) => item.slug));
 
   private syncing = false;

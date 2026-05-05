@@ -5,6 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:desktop": "ng build --configuration desktop",
+    "desktop:start": "npm --prefix .. run desktop:start",
+    "dekstop:start": "npm --prefix .. run desktop:start",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:Project1-app": "node dist/Project1-app/server/server.mjs"

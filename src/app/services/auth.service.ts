@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { tap } from 'rxjs/operators';
 import { Observable, Subject } from 'rxjs';
+import { injectApiBaseUrl } from './api-base';
 
 type User = {
   firstName: string;
@@ -22,7 +23,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
 
-  private readonly api = 'http://localhost:3000/api';
+  private readonly api = injectApiBaseUrl();
   private readonly userKey = 'techmarket_auth_user';
   private readonly tokenKey = 'techmarket_auth_token';
 

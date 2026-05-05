@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { injectApiBaseUrl } from '../../services/api-base';
 
 type AdminUser = {
   _id: string;
@@ -44,7 +45,7 @@ type AdminStats = {
 export class AdminComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly apiBase = 'http://localhost:3000/api/admin';
+  private readonly apiBase = `${injectApiBaseUrl()}/admin`;
 
   usersLoading = true;
   statsLoading = true;

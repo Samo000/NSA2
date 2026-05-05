@@ -43,6 +43,12 @@
             }
           },
           "configurations": {
+            "desktop": {
+              "outputMode": "static",
+              "server": false,
+              "ssr": false,
+              "outputHashing": "all"
+            },
             "production": {
               "budgets": [
                 {

@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from './auth.service';
+import { injectApiBaseUrl } from './api-base';
 
 export type ProductReview = {
   id: string;
@@ -30,7 +31,7 @@ type CreateReviewResponse = {
 export class ProductReviewsService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly api = 'http://localhost:3000/api/reviews';
+  private readonly api = `${injectApiBaseUrl()}/reviews`;
   private readonly store = signal<ReviewStore>({});
 
   reviewsFor(slug: string): ProductReview[] {

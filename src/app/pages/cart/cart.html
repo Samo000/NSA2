@@ -125,9 +125,39 @@
 
     <ng-template #emptyCart>
       <div class="empty">
-        <h2>Kosarica je prazna</h2>
-        <p>Dodaj izdelek iz trgovine.</p>
-        <a routerLink="/" class="checkout">Nazaj na izdelke</a>
+        <div class="empty-shell">
+          <div class="empty-icon" aria-hidden="true">
+            <i class="fa-solid fa-basket-shopping"></i>
+          </div>
+
+          <div class="empty-copy">
+            <span class="empty-kicker">Pripravljeno za nakup</span>
+            <h2>Košarica je prazna</h2>
+            <p>Dodaj izdelke iz trgovine in tukaj boš videl pregled naročila, količine in skupni znesek.</p>
+          </div>
+
+          <div class="empty-actions">
+            <a routerLink="/" class="checkout">
+              <i class="fa-solid fa-store"></i>
+              Odpri izdelke
+            </a>
+            <a routerLink="/" class="back secondary-action">
+              <i class="fa-solid fa-arrow-left"></i>
+              Nazaj v trgovino
+            </a>
+          </div>
+
+          <div class="empty-meta">
+            <div>
+              <span>Status</span>
+              <strong>Brez izbranih artiklov</strong>
+            </div>
+            <div>
+              <span>Naslednji korak</span>
+              <strong>Izberi izdelek</strong>
+            </div>
+          </div>
+        </div>
       </div>
     </ng-template>
   </div>
