@@ -1,0 +1,33 @@
+<section id="products" class="products">
+  <div class="head">
+    <h2>Izbrani izdelki</h2>
+    <p>Klikni izdelek za podrobnosti.</p>
+  </div>
+
+  <div class="product-grid">
+    <article
+      class="product-card"
+      *ngFor="let p of products; let i = index"
+      [style.animationDelay.ms]="i * 55"
+      [routerLink]="['/product', p.slug]"
+    >
+      <div class="image-wrapper">
+        <img [src]="p.src" [alt]="p.alt">
+        <span class="category-pill">{{ p.category }}</span>
+        <span class="discount-sticker" *ngIf="p.showDiscountBadge">POPUST {{ p.discountPercent }}%</span>
+      </div>
+
+      <div class="product-info">
+        <h3>{{ p.name }}</h3>
+        <div class="meta">
+          <span class="rating"><i class="fa-solid fa-star"></i> {{ p.rating | number: '1.1-1' }} ({{ p.ratingCount }})</span>
+          <span class="stock" [class.out]="p.stock <= 0">{{ p.stock > 0 ? 'Na zalogi' : 'Ni na zalogi' }}</span>
+        </div>
+        <div class="price-row">
+          <span class="old-price" *ngIf="p.originalPrice">{{ p.originalPrice }}</span>
+          <span class="price">{{ p.price }}</span>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

@@ -7,7 +7,7 @@ const bcrypt = require('bcrypt');
 const User = require('./models/user');
 const Listing = require('./models/listing');
 const Product = require('./models/product');
-const { featuredListingsSeed, featuredProductsSeed } = require('./data/featured-catalog');
+const { featuredProductsSeed } = require('./data/featured-catalog');
 
 const app = express();
 
@@ -18,7 +18,7 @@ app.use(cookieParser());
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/listings', require('./routes/listings'));
+app.use('/api/products', require('./routes/products'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/reviews', require('./routes/reviews'));
@@ -61,38 +61,6 @@ async function ensureDefaultAdmin() {
   }
 }
 
-async function ensureListingStockField() {
-  await Listing.updateMany({ stock: { $exists: false } }, { $set: { stock: 0 } });
-}
-
-async function ensureFeaturedListings() {
-  const operations = featuredListingsSeed.map((item) => ({
-    updateOne: {
-      filter: { slug: item.slug },
-      update: {
-        $setOnInsert: {
-          title: item.title,
-          slug: item.slug,
-          price: item.price,
-          stock: 10,
-          type: 'buyNow',
-          category: 'featured',
-          description: `${item.title} from featured catalog.`,
-          images: []
-        }
-      },
-      upsert: true
-    }
-  }));
-
-  const result = await Listing.bulkWrite(operations, { ordered: false });
-  const inserted = Number(result.upsertedCount || 0);
-
-  if (inserted > 0) {
-    console.log(`Seeded ${inserted} featured listings into inventory.`);
-  }
-}
-
 async function ensureFeaturedProducts() {
   const operations = featuredProductsSeed.map((item) => ({
     updateOne: {
@@ -124,6 +92,15 @@ async function ensureFeaturedProducts() {
   }
 }
 
+async function removeAllListings() {
+  const result = await Listing.deleteMany({});
+  const deleted = Number(result.deletedCount || 0);
+
+  if (deleted > 0) {
+    console.log(`Removed ${deleted} listings; store inventory now uses products only.`);
+  }
+}
+
 async function removeLegacyBidsCollection() {
   const collections = await mongoose.connection.db.listCollections({ name: 'bids' }).toArray();
   if (!collections.length) return;
@@ -138,8 +115,7 @@ mongoose
     console.log('MongoDB connected');
     await removeLegacyBidsCollection();
     await ensureDefaultAdmin();
-    await ensureListingStockField();
-    await ensureFeaturedListings();
+    await removeAllListings();
     await ensureFeaturedProducts();
 
     const PORT = Number(process.env.PORT || 3000);

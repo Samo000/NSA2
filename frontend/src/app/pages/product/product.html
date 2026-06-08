@@ -1,0 +1,164 @@
+<section class="product-page">
+  <ng-container *ngIf="currentProduct() as p; else loadingOrNotFound">
+    <div class="wrap">
+      <a class="back" routerLink="/">
+        <i class="fa-solid fa-arrow-left"></i>
+        Nazaj na ponudbo
+      </a>
+
+      <div class="panel">
+        <div class="left">
+          <div class="frame">
+            <img [src]="p.src" [alt]="p.alt" />
+            <span class="discount-sticker detail" *ngIf="p.showDiscountBadge">POPUST {{ p.discountPercent }}%</span>
+          </div>
+
+          <div class="badges">
+            <span class="badge"><i class="fa-solid fa-shield-halved"></i> Garancija</span>
+            <span class="badge"><i class="fa-solid fa-truck-fast"></i> Dostava 1-3 dni</span>
+            <span class="badge"><i class="fa-solid fa-circle-check"></i> Preverjeno</span>
+          </div>
+        </div>
+
+        <div class="right">
+          <h1>{{ p.name }}</h1>
+          <div class="rating-summary">
+            <span class="stars">
+              <i class="fa-solid fa-star" *ngFor="let star of stars" [class.dim]="star > averageRating(p)"></i>
+            </span>
+            <span class="score">{{ averageRating(p) | number: '1.1-1' }}/5</span>
+            <span class="count">({{ totalReviewCount(p) }} ocen)</span>
+          </div>
+
+          <div class="pricebox">
+            <div class="old-price detail-price" *ngIf="p.originalPrice">{{ p.originalPrice }}</div>
+            <div class="price">{{ p.price }}</div>
+            <div class="hint">DDV vkljucen | moznost vracila</div>
+          </div>
+
+          <div class="specs">
+            <h3>Tehnicne podrobnosti</h3>
+            <ul>
+              <li *ngFor="let s of p.specs">{{ s }}</li>
+            </ul>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" type="button" (click)="add(p)">
+              <i class="fa-solid fa-cart-shopping"></i>
+              Dodaj v kosarico
+            </button>
+
+            <button class="btn ghost" type="button" [class.saved]="isSaved(p.slug)" (click)="toggleSaved(p)">
+              <i class="fa-regular fa-heart" *ngIf="!isSaved(p.slug)"></i>
+              <i class="fa-solid fa-heart" *ngIf="isSaved(p.slug)"></i>
+              {{ isSaved(p.slug) ? 'Shranjen' : 'Shrani' }}
+            </button>
+
+            <a class="btn link" routerLink="/cart">
+              Kosarica
+              <i class="fa-solid fa-arrow-right"></i>
+            </a>
+
+            <a class="btn link" routerLink="/wishlist">
+              Seznam zelja
+              <i class="fa-solid fa-up-right-from-square"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <section class="reviews-panel">
+        <div class="reviews-head">
+          <h2>Ocene uporabnikov</h2>
+          <p>Dodaj svojo oceno in pomagaj ostalim pri izbiri.</p>
+        </div>
+
+        <div class="review-form soft-card">
+          <div class="row-1">
+            <label>
+              <span>Ocena</span>
+              <select class="input-field" [(ngModel)]="reviewRating" [ngModelOptions]="{ standalone: true }">
+                <option [ngValue]="5">5 - Odlicno</option>
+                <option [ngValue]="4">4 - Zelo dobro</option>
+                <option [ngValue]="3">3 - Dobro</option>
+                <option [ngValue]="2">2 - Povprecno</option>
+                <option [ngValue]="1">1 - Slabo</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            <span>Komentar</span>
+            <textarea
+              class="input-field"
+              rows="4"
+              [(ngModel)]="reviewComment"
+              [ngModelOptions]="{ standalone: true }"
+            ></textarea>
+          </label>
+
+          <p class="review-error" *ngIf="reviewError">{{ reviewError }}</p>
+          <p class="review-success" *ngIf="reviewMessage">{{ reviewMessage }}</p>
+
+          <button class="btn primary review-submit" type="button" (click)="submitReview(p)">Oddaj oceno</button>
+        </div>
+
+        <div class="review-list" *ngIf="userReviews(p.slug).length; else noReviews">
+          <article class="review-card soft-card" *ngFor="let review of userReviews(p.slug)">
+            <div class="review-top">
+              <strong>{{ review.author }}</strong>
+              <span class="review-date">{{ formatReviewDate(review.createdAt) }}</span>
+            </div>
+            <div class="review-stars">
+              <i class="fa-solid fa-star" *ngFor="let star of stars" [class.dim]="star > review.rating"></i>
+            </div>
+            <p>{{ review.comment }}</p>
+          </article>
+        </div>
+
+        <ng-template #noReviews>
+          <div class="review-empty soft-card">
+            <p>Ta izdelek se nima novih ocen. Bodi prvi in dodaj svojo.</p>
+          </div>
+        </ng-template>
+      </section>
+
+      <div class="more">
+        <div class="more-head">
+          <h2>Vsi izdelki</h2>
+          <p>Scrollaj in izberi drug izdelek.</p>
+        </div>
+
+        <div class="rail">
+          <a class="mini" *ngFor="let x of allProducts()" [routerLink]="['/product', x.slug]">
+            <div class="mini-img">
+              <img [src]="x.src" [alt]="x.alt" />
+            </div>
+            <div class="mini-meta">
+              <div class="mini-name">{{ x.name }}</div>
+              <div class="mini-price">
+                <span class="old-price" *ngIf="x.originalPrice">{{ x.originalPrice }}</span>
+                {{ x.price }}
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #loadingOrNotFound>
+    <div class="wrap nf" *ngIf="loadingProduct(); else notFound">
+      <h1>Nalaganje izdelka...</h1>
+      <p class="loading-copy">Podatke beremo iz baze.</p>
+    </div>
+  </ng-template>
+
+  <ng-template #notFound>
+    <div class="wrap nf">
+      <h1>Izdelek ne obstaja</h1>
+      <a class="btn primary" routerLink="/">Nazaj domov</a>
+    </div>
+  </ng-template>
+</section>

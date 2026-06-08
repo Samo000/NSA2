@@ -4,11 +4,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
+    "rootDir": "./frontend/src",
     "types": [
       "jasmine"
     ]
   },
   "include": [
-    "src/**/*.ts"
+    "frontend/src/**/*.ts"
   ]
 }

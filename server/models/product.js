@@ -5,6 +5,8 @@ const productSchema = new mongoose.Schema({
   slug: { type: String, index: true },
   category: String,
   price: Number,
+  discountPercent: { type: Number, default: 0 },
+  showDiscountBadge: { type: Boolean, default: false },
   stock: Number,
   description: String,
   image: String,

@@ -1,36 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/product');
-const Listing = require('../models/listing');
 const User = require('../models/user');
 const Order = require('../models/order');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
-const { featuredListingsSeed, featuredProductsSeed } = require('../data/featured-catalog');
-
-async function ensureFeaturedListings() {
-  const operations = featuredListingsSeed.map((item) => ({
-    updateOne: {
-      filter: { slug: item.slug },
-      update: {
-        $setOnInsert: {
-          title: item.title,
-          slug: item.slug,
-          price: item.price,
-          stock: 10,
-          type: 'buyNow',
-          category: 'featured',
-          description: `${item.title} from featured catalog.`,
-          images: []
-        }
-      },
-      upsert: true
-    }
-  }));
-
-  await Listing.bulkWrite(operations, { ordered: false });
-  await Listing.updateMany({ stock: { $exists: false } }, { $set: { stock: 0 } });
-}
+const { featuredProductsSeed } = require('../data/featured-catalog');
 
 async function ensureFeaturedProducts() {
   const operations = featuredProductsSeed.map((item) => ({
@@ -42,6 +17,8 @@ async function ensureFeaturedProducts() {
           slug: item.slug,
           category: item.category,
           price: item.price,
+          discountPercent: 0,
+          showDiscountBadge: false,
           stock: item.stock,
           description: item.description,
           image: item.image,
@@ -59,34 +36,29 @@ async function ensureFeaturedProducts() {
 }
 
 async function ensureFeaturedInventory() {
-  await Promise.all([
-    ensureFeaturedListings(),
-    ensureFeaturedProducts()
-  ]);
+  await ensureFeaturedProducts();
 }
 
-function toInventoryItem(item, source) {
-  if (source === 'product') {
-    return {
-      id: item._id,
-      source,
-      name: item.name || 'Untitled product',
-      price: Number(item.price || 0),
-      stock: Number(item.stock || 0),
-      category: item.isAuction ? 'Auction' : 'Standard',
-      createdAt: item.createdAt
-    };
-  }
-
+function toInventoryItem(item) {
   return {
     id: item._id,
-    source,
-    name: item.title || 'Untitled listing',
-    price: Number(item.price || item.buyoutPrice || item.currentBid || 0),
+    source: 'product',
+    name: item.name || 'Untitled product',
+    price: Number(item.price || 0),
+    discountPercent: Number(item.discountPercent || 0),
+    showDiscountBadge: Boolean(item.showDiscountBadge),
     stock: Number(item.stock || 0),
-    category: item.type || 'buyNow',
+    category: item.isAuction ? 'Auction' : 'Standard',
     createdAt: item.createdAt
   };
+}
+
+function slugify(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 router.get('/users', auth, admin, async (_req, res) => {
@@ -111,15 +83,9 @@ router.get('/inventory', auth, admin, async (_req, res) => {
   try {
     await ensureFeaturedInventory();
 
-    const [products, listings] = await Promise.all([
-      Product.find().sort({ createdAt: -1 }),
-      Listing.find().sort({ createdAt: -1 })
-    ]);
+    const products = await Product.find().sort({ createdAt: -1 });
 
-    const inventory = [
-      ...products.map((item) => toInventoryItem(item, 'product')),
-      ...listings.map((item) => toInventoryItem(item, 'listing'))
-    ].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    const inventory = products.map(toInventoryItem);
 
     return res.json(inventory);
   } catch {
@@ -136,22 +102,57 @@ router.patch('/inventory/:source/:id/stock', auth, admin, async (req, res) => {
       return res.status(400).json({ message: 'Stock must be a non-negative integer' });
     }
 
-    const Model = source === 'product' ? Product : source === 'listing' ? Listing : null;
-    if (!Model) {
+    if (source !== 'product') {
       return res.status(400).json({ message: 'Invalid inventory source' });
     }
 
-    const updated = await Model.findByIdAndUpdate(id, { stock }, { new: true });
+    const updated = await Product.findByIdAndUpdate(id, { stock }, { new: true });
     if (!updated) {
       return res.status(404).json({ message: 'Item not found' });
     }
 
     return res.json({
       message: 'Stock updated',
-      item: toInventoryItem(updated, source)
+      item: toInventoryItem(updated)
     });
   } catch {
     return res.status(500).json({ message: 'Could not update stock' });
+  }
+});
+
+router.patch('/inventory/:source/:id/pricing', auth, admin, async (req, res) => {
+  try {
+    const { source, id } = req.params;
+    const discountPercent = Number(req.body?.discountPercent || 0);
+    const showDiscountBadge = Boolean(req.body?.showDiscountBadge);
+
+    if (source !== 'product') {
+      return res.status(400).json({ message: 'Invalid inventory source' });
+    }
+
+    if (!Number.isInteger(discountPercent) || discountPercent < 0 || discountPercent > 95) {
+      return res.status(400).json({ message: 'Discount must be a whole percent from 0 to 95' });
+    }
+
+    const updated = await Product.findByIdAndUpdate(
+      id,
+      {
+        discountPercent,
+        showDiscountBadge: showDiscountBadge && discountPercent > 0
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+
+    return res.json({
+      message: 'Pricing updated',
+      item: toInventoryItem(updated)
+    });
+  } catch {
+    return res.status(500).json({ message: 'Could not update pricing' });
   }
 });
 
@@ -184,7 +185,10 @@ router.post('/products', auth, admin, async (req, res) => {
 
     const product = await Product.create({
       name: normalizedName,
+      slug: slugify(normalizedName),
       price: normalizedPrice,
+      discountPercent: 0,
+      showDiscountBadge: false,
       stock: normalizedStock,
       description: String(description || '').trim(),
       image: String(image || '').trim(),
@@ -206,31 +210,14 @@ router.get('/stats', auth, admin, async (_req, res) => {
       totalUsers,
       totalAdmins,
       totalProducts,
-      totalListings,
       totalOrders,
-      productStockAgg,
-      listingStockAgg
+      productStockAgg
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ role: 'admin' }),
       Product.countDocuments(),
-      Listing.countDocuments(),
       Order.countDocuments(),
       Product.aggregate([
-        {
-          $group: {
-            _id: null,
-            totalStockUnits: { $sum: '$stock' },
-            totalInventoryValue: { $sum: { $multiply: ['$stock', '$price'] } },
-            lowStockItems: {
-              $sum: {
-                $cond: [{ $lte: ['$stock', 5] }, 1, 0]
-              }
-            }
-          }
-        }
-      ]),
-      Listing.aggregate([
         {
           $group: {
             _id: null,
@@ -239,7 +226,18 @@ router.get('/stats', auth, admin, async (_req, res) => {
               $sum: {
                 $multiply: [
                   '$stock',
-                  { $ifNull: ['$price', { $ifNull: ['$buyoutPrice', { $ifNull: ['$currentBid', 0] }] }] }
+                  '$price',
+                  {
+                    $subtract: [
+                      1,
+                      {
+                        $divide: [
+                          { $ifNull: ['$discountPercent', 0] },
+                          100
+                        ]
+                      }
+                    ]
+                  }
                 ]
               }
             },
@@ -259,34 +257,18 @@ router.get('/stats', auth, admin, async (_req, res) => {
       lowStockItems: 0
     };
 
-    const listingStock = listingStockAgg[0] || {
-      totalStockUnits: 0,
-      totalInventoryValue: 0,
-      lowStockItems: 0
-    };
-
     return res.json({
       totalUsers,
       totalAdmins,
       totalProducts,
-      totalListings,
+      totalListings: 0,
       totalOrders,
-      totalStockUnits: Number(productStock.totalStockUnits || 0) + Number(listingStock.totalStockUnits || 0),
-      totalInventoryValue:
-        Number(productStock.totalInventoryValue || 0) + Number(listingStock.totalInventoryValue || 0),
-      lowStockProducts: Number(productStock.lowStockItems || 0) + Number(listingStock.lowStockItems || 0)
+      totalStockUnits: Number(productStock.totalStockUnits || 0),
+      totalInventoryValue: Number(productStock.totalInventoryValue || 0),
+      lowStockProducts: Number(productStock.lowStockItems || 0)
     });
   } catch {
     return res.status(500).json({ message: 'Could not load stats' });
-  }
-});
-
-router.delete('/listing/:id', auth, admin, async (req, res) => {
-  try {
-    await Listing.findByIdAndDelete(req.params.id);
-    return res.json({ message: 'Deleted' });
-  } catch {
-    return res.status(500).json({ message: 'Delete failed' });
   }
 });
 

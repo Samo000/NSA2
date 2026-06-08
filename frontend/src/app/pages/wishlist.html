@@ -1,0 +1,64 @@
+<section class="page-container wishlist-page">
+  <header class="wishlist-head soft-card">
+    <div>
+      <h1>Moj seznam zelja</h1>
+      <p>Shrani najljubse izdelke in deli seznam s povezavo.</p>
+    </div>
+    <div class="head-meta">
+      <span>{{ products().length }} izdelkov</span>
+      <button class="clear-btn" type="button" (click)="clearAll()" [disabled]="!products().length">
+        Pocisti seznam
+      </button>
+    </div>
+  </header>
+
+  <p class="import-message" *ngIf="importMessage">{{ importMessage }}</p>
+
+  <section class="share-box soft-card">
+    <h3>Deli svoj wishlist</h3>
+    <p>Poslji povezavo prijatelju in nalozil bo isti seznam.</p>
+    <div class="share-row">
+      <input
+        class="input-field"
+        [value]="shareUrl()"
+        [placeholder]="products().length ? '' : 'Dodaj izdelke za ustvarjanje povezave'"
+        readonly
+      />
+      <button class="copy-btn" type="button" (click)="copyShareLink()" [disabled]="!products().length">
+        Kopiraj povezavo
+      </button>
+    </div>
+    <p class="copy-message" *ngIf="copyMessage">{{ copyMessage }}</p>
+  </section>
+
+  <section *ngIf="products().length; else empty" class="wishlist-grid">
+    <article class="wish-card soft-card" *ngFor="let product of products()">
+      <a [routerLink]="['/product', product.slug]" class="thumb">
+        <img [src]="product.src" [alt]="product.alt" />
+        <span class="discount-sticker" *ngIf="product.showDiscountBadge">POPUST {{ product.discountPercent }}%</span>
+      </a>
+
+      <div class="wish-content">
+        <a [routerLink]="['/product', product.slug]" class="title">{{ product.name }}</a>
+        <p class="meta">{{ product.category }} | Ocena {{ product.rating | number: '1.1-1' }}</p>
+        <div class="wish-price">
+          <span class="old-price" *ngIf="product.originalPrice">{{ product.originalPrice }}</span>
+          {{ product.price }}
+        </div>
+      </div>
+
+      <div class="wish-actions">
+        <button type="button" class="action-btn" (click)="addToCart(product)">Dodaj v kosarico</button>
+        <button type="button" class="action-btn danger" (click)="remove(product.slug)">Odstrani</button>
+      </div>
+    </article>
+  </section>
+
+  <ng-template #empty>
+    <div class="empty soft-card">
+      <h3>Seznam zelja je trenutno prazen</h3>
+      <p>Shrani izdelke na strani izdelka in se bodo prikazali tukaj.</p>
+      <a routerLink="/izdelki" class="browse-link">Poglej izdelke</a>
+    </div>
+  </ng-template>
+</section>
