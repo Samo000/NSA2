@@ -120,13 +120,10 @@ router.post('/', auth, async (req, res) => {
       { ordered: false }
     );
 
-    let emailSent = false;
-    try {
-      const emailResult = await sendOrderConfirmation(order);
-      emailSent = Boolean(emailResult.sent);
-    } catch (error) {
+    sendOrderConfirmation(order).catch((error) => {
       console.error(`Order confirmation email failed for ${order.orderNumber}:`, error);
-    }
+    });
+    const emailSent = false;
 
     return res.status(201).json({
       message: 'Order created',
