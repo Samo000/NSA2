@@ -73,6 +73,7 @@ export class AdminComponent implements OnInit {
   productStock: number | null = null;
   productDescription = '';
   productImage = '';
+  productModelFile = '';
   productAuction = false;
   productMessage = '';
   productError = '';
@@ -278,6 +279,7 @@ export class AdminComponent implements OnInit {
       stock,
       description: this.productDescription.trim(),
       image: this.productImage.trim(),
+      modelFile: this.productModelFile.trim(),
       isAuction: this.productAuction
     }, this.requestOptions()).subscribe({
       next: () => {
@@ -288,6 +290,7 @@ export class AdminComponent implements OnInit {
         this.productStock = null;
         this.productDescription = '';
         this.productImage = '';
+        this.productModelFile = '';
         this.productAuction = false;
         this.loadInventory();
         this.loadStats();

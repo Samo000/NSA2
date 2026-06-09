@@ -14,8 +14,25 @@
             class="input-field"
             placeholder="Isci po imenu, kategoriji ali specifikaciji..."
             [(ngModel)]="search"
+            (focus)="focusSearch()"
+            (blur)="blurSearch()"
             autocomplete="off"
           />
+
+          <div class="autocomplete" *ngIf="showSuggestions && suggestions().length">
+            <button
+              type="button"
+              class="suggestion"
+              *ngFor="let suggestion of suggestions()"
+              (mousedown)="chooseSuggestion(suggestion)"
+            >
+              <img [src]="suggestion.src" [alt]="suggestion.alt" />
+              <span>
+                <strong>{{ suggestion.name }}</strong>
+                <small>{{ suggestion.category }} | {{ suggestion.price }}</small>
+              </span>
+            </button>
+          </div>
         </div>
       </label>
 
@@ -78,15 +95,61 @@
       class="product-card"
       *ngFor="let p of filteredProducts(); let i = index"
       [style.animationDelay.ms]="i * 55"
-      [routerLink]="'/product/' + p.slug"
     >
-      <div class="image-wrapper">
-        <img [src]="p.src" [alt]="p.alt" />
+      <div class="image-wrapper" [class.has-model]="activeModelSlug === p.slug">
+        <model-viewer
+          *ngIf="p.modelFile && activeModelSlug === p.slug; else staticProductImage"
+          class="product-model"
+          [src]="p.modelFile"
+          [poster]="p.src"
+          [attr.alt]="p.alt"
+          reveal="auto"
+          loading="lazy"
+          camera-controls
+          auto-rotate
+          touch-action="pan-y"
+          shadow-intensity="0.8"
+        ></model-viewer>
+
+        <ng-template #staticProductImage>
+          <button type="button" class="image-link" (click)="openScreenshot(p, $event)" [attr.aria-label]="'Odpri sliko ' + p.name">
+            <img [src]="p.src" [alt]="p.alt" />
+          </button>
+        </ng-template>
+
         <span class="category-pill">{{ p.category }}</span>
         <span class="discount-sticker" *ngIf="p.showDiscountBadge">POPUST {{ p.discountPercent }}%</span>
+
+        <div class="media-actions">
+          <button
+            type="button"
+            class="media-action"
+            *ngIf="p.modelFile"
+            [class.active]="activeModelSlug === p.slug"
+            (click)="activateModel(p, $event)"
+            title="360 preview"
+          >
+            <i class="fa-solid fa-cube"></i>
+            <span>360</span>
+          </button>
+          <button
+            type="button"
+            class="media-action"
+            *ngIf="activeModelSlug === p.slug"
+            (click)="showImage(p, $event)"
+            title="Image view"
+          >
+            <i class="fa-regular fa-image"></i>
+            <span>Image</span>
+          </button>
+          <button type="button" class="media-action" (click)="openScreenshot(p, $event)" title="Open screenshot">
+            <i class="fa-solid fa-up-right-from-square"></i>
+            <span>Screenshot</span>
+          </button>
+        </div>
       </div>
 
-      <div class="product-info">
+      <a class="product-info" [routerLink]="'/product/' + p.slug">
         <h3>{{ p.name }}</h3>
         <div class="meta">
           <span class="rating"><i class="fa-solid fa-star"></i> {{ p.rating | number: '1.1-1' }} ({{ p.ratingCount }})</span>
@@ -96,7 +159,7 @@
           <span class="old-price" *ngIf="p.originalPrice">{{ p.originalPrice }}</span>
           <span class="price">{{ p.price }}</span>
         </div>
-      </div>
+      </a>
     </article>
   </div>
 

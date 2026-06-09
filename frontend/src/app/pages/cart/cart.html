@@ -124,6 +124,36 @@
     </ng-container>
 
     <ng-template #emptyCart>
+      <div class="empty success" *ngIf="hasConfirmedOrder(); else emptyState">
+        <div class="empty-shell">
+          <img class="success-image" [src]="lastOrderItems[0].src" [alt]="lastOrderItems[0].name" />
+
+          <div class="empty-copy">
+            <span class="empty-kicker">Uspešen nakup</span>
+            <h2>Narocilo je potrjeno</h2>
+            <p>{{ checkoutSuccess }} Stevilka narocila: <strong>{{ orderNumber }}</strong></p>
+          </div>
+
+          <div class="ordered-items">
+            <div class="ordered-item" *ngFor="let it of lastOrderItems">
+              <img [src]="it.src" [alt]="it.name" />
+              <div>
+                <strong>{{ it.name }}</strong>
+                <span>{{ it.qty }} x {{ it.price }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-actions">
+            <a routerLink="/" class="checkout">
+              <i class="fa-solid fa-store"></i>
+              Nadaljuj nakup
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyState>
       <div class="empty">
         <div class="empty-shell">
           <div class="empty-icon" aria-hidden="true">
@@ -159,6 +189,7 @@
           </div>
         </div>
       </div>
+      </ng-template>
     </ng-template>
   </div>
 </section>

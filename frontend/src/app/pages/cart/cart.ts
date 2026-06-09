@@ -2,7 +2,15 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { CartService } from '../../services/cart.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { CartItem, CartService } from '../../services/cart.service';
+import { injectApiBaseUrl } from '../../services/api-base';
+
+type OrderResponse = {
+  orderNumber: string;
+};
 
 @Component({
   selector: 'app-cart',
@@ -18,6 +26,8 @@ export class CartComponent {
   checkoutSuccess = '';
   processing = false;
   orderNumber = '';
+  lastOrderItems: CartItem[] = [];
+  private readonly ordersApi = `${injectApiBaseUrl()}/orders`;
 
   checkout = {
     email: '',
@@ -36,7 +46,11 @@ export class CartComponent {
     acceptedTerms: false
   };
 
-  constructor(public cart: CartService) {}
+  constructor(
+    public cart: CartService,
+    private readonly http: HttpClient,
+    private readonly auth: AuthService
+  ) {}
 
   applyCoupon(): void {
     const ok = this.cart.applyCoupon(this.code);
@@ -60,6 +74,11 @@ export class CartComponent {
     this.checkoutError = '';
     this.checkoutSuccess = '';
     this.orderNumber = '';
+    this.lastOrderItems = [];
+  }
+
+  hasConfirmedOrder(): boolean {
+    return !!this.checkoutSuccess && this.lastOrderItems.length > 0;
   }
 
   checkoutDisabled(): boolean {
@@ -87,7 +106,7 @@ export class CartComponent {
     );
   }
 
-  confirmOrder(): void {
+  async confirmOrder(): Promise<void> {
     this.checkoutError = '';
     this.checkoutSuccess = '';
 
@@ -104,11 +123,38 @@ export class CartComponent {
 
     this.processing = true;
 
-    setTimeout(() => {
-      this.processing = false;
-      this.orderNumber = `TM-${Date.now().toString().slice(-8)}`;
-      this.checkoutSuccess = 'Order confirmed. This is a demo checkout. No payment was charged.';
+    try {
+      const items = this.cart.items();
+      const response = await firstValueFrom(
+        this.http.post<OrderResponse>(
+          this.ordersApi,
+          {
+            items: items.map((item) => ({
+              slug: item.slug,
+              quantity: item.qty
+            })),
+            checkout: this.checkout,
+            coupon: this.cart.coupon()
+          },
+          this.requestOptions()
+        )
+      );
+
+      this.lastOrderItems = items;
+      this.orderNumber = response.orderNumber;
+      this.checkoutSuccess = 'Uspešen nakup. Narocilo je bilo shranjeno v bazo.';
       this.cart.clear();
-    }, 1300);
+    } catch (error: any) {
+      this.checkoutError = error?.error?.message || 'Order could not be completed. Please try again.';
+    } finally {
+      this.processing = false;
+    }
+  }
+
+  private requestOptions(): { headers: HttpHeaders } {
+    const token = this.auth.getToken();
+    return {
+      headers: token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders()
+    };
   }
 }

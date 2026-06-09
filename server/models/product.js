@@ -10,6 +10,7 @@ const productSchema = new mongoose.Schema({
   stock: Number,
   description: String,
   image: String,
+  modelFile: String,
   specs: { type: [String], default: [] },
   rating: { type: Number, default: 0 },
   ratingCount: { type: Number, default: 0 },

@@ -12,6 +12,10 @@ async function ensureFeaturedProducts() {
     updateOne: {
       filter: { slug: item.slug },
       update: {
+        $set: {
+          image: item.image,
+          modelFile: item.modelFile
+        },
         $setOnInsert: {
           name: item.name,
           slug: item.slug,
@@ -21,7 +25,6 @@ async function ensureFeaturedProducts() {
           showDiscountBadge: false,
           stock: item.stock,
           description: item.description,
-          image: item.image,
           specs: item.specs,
           rating: item.rating,
           ratingCount: item.ratingCount,
@@ -162,6 +165,7 @@ router.post('/products', auth, admin, async (req, res) => {
       name,
       description = '',
       image = '',
+      modelFile = '',
       isAuction = false,
       price,
       stock
@@ -192,6 +196,7 @@ router.post('/products', auth, admin, async (req, res) => {
       stock: normalizedStock,
       description: String(description || '').trim(),
       image: String(image || '').trim(),
+      modelFile: String(modelFile || '').trim(),
       isAuction: Boolean(isAuction),
       createdBy: req.user.id
     });

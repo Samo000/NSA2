@@ -20,6 +20,7 @@ app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/orders', require('./routes/orders'));
 app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/reviews', require('./routes/reviews'));
 
@@ -66,6 +67,10 @@ async function ensureFeaturedProducts() {
     updateOne: {
       filter: { slug: item.slug },
       update: {
+        $set: {
+          image: item.image,
+          modelFile: item.modelFile
+        },
         $setOnInsert: {
           name: item.name,
           slug: item.slug,
@@ -73,7 +78,6 @@ async function ensureFeaturedProducts() {
           price: item.price,
           stock: item.stock,
           description: item.description,
-          image: item.image,
           specs: item.specs,
           rating: item.rating,
           ratingCount: item.ratingCount,

@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { ProductImage } from '../models/image.model';
+import { FEATURED_PRODUCTS, ProductImage } from '../models/image.model';
 import { injectApiBaseUrl } from './api-base';
 
 type ApiProduct = {
@@ -15,6 +15,7 @@ type ApiProduct = {
   stock?: number;
   description?: string;
   image?: string;
+  modelFile?: string;
   specs?: string[];
   rating?: number;
   ratingCount?: number;
@@ -48,14 +49,14 @@ export class ProductCatalogService {
 
     try {
       const products = await firstValueFrom(this.http.get<ApiProduct[]>(this.api));
-      this.products.set(
-        (Array.isArray(products) ? products : [])
-          .map((item) => this.toProductImage(item))
-          .sort((a, b) => this.catalogOrder(a) - this.catalogOrder(b) || a.name.localeCompare(b.name))
-      );
+      const mapped = (Array.isArray(products) ? products : [])
+        .map((item) => this.withLocalModelFallback(this.toProductImage(item)))
+        .sort((a, b) => this.catalogOrder(a) - this.catalogOrder(b) || a.name.localeCompare(b.name));
+
+      this.products.set(mapped.length ? mapped : FEATURED_PRODUCTS);
       this.loaded = true;
     } catch {
-      this.products.set([]);
+      this.products.set(FEATURED_PRODUCTS);
     } finally {
       this.loading = false;
     }
@@ -68,7 +69,7 @@ export class ProductCatalogService {
 
     try {
       const product = await firstValueFrom(this.http.get<ApiProduct>(`${this.api}/${slug}`));
-      const mapped = this.toProductImage(product);
+      const mapped = this.withLocalModelFallback(this.toProductImage(product));
       this.products.update((items) => (items.some((item) => item.slug === mapped.slug) ? items : [mapped, ...items]));
       return mapped;
     } catch {
@@ -85,6 +86,7 @@ export class ProductCatalogService {
 
     return {
       src: this.normalizeImagePath(product.image),
+      modelFile: this.normalizeOptionalAssetPath(product.modelFile),
       alt: name,
       name,
       price: this.formatEUR(salePrice),
@@ -108,6 +110,20 @@ export class ProductCatalogService {
     const path = String(value || '/assets/laptop.jpg').trim();
     if (/^(https?:)?\/\//.test(path) || path.startsWith('data:')) return path;
     return path.startsWith('/') ? path : `/${path}`;
+  }
+
+  private normalizeOptionalAssetPath(value: unknown): string | undefined {
+    const path = String(value || '').trim();
+    if (!path) return undefined;
+    if (/^(https?:)?\/\//.test(path) || path.startsWith('data:')) return path;
+    return path.startsWith('/') ? path : `/${path}`;
+  }
+
+  private withLocalModelFallback(product: ProductImage): ProductImage {
+    if (product.modelFile) return product;
+
+    const local = FEATURED_PRODUCTS.find((item) => item.slug === product.slug);
+    return local?.modelFile ? { ...product, modelFile: local.modelFile } : product;
   }
 
   private catalogOrder(product: ProductImage): number {

@@ -8,9 +8,56 @@
 
       <div class="panel">
         <div class="left">
-          <div class="frame">
-            <img [src]="p.src" [alt]="p.alt" />
+          <div class="frame" [class.model-active]="mediaMode === 'model'">
+            <model-viewer
+              *ngIf="p.modelFile && mediaMode === 'model'; else productImage"
+              class="detail-model"
+              [src]="p.modelFile"
+              [poster]="p.src"
+              [attr.alt]="p.alt"
+              reveal="auto"
+              loading="lazy"
+              camera-controls
+              auto-rotate
+              touch-action="pan-y"
+              shadow-intensity="0.9"
+            ></model-viewer>
+
+            <ng-template #productImage>
+              <button type="button" class="detail-image-button" (click)="openScreenshot(p)" [attr.aria-label]="'Odpri sliko ' + p.name">
+                <img [src]="p.src" [alt]="p.alt" />
+              </button>
+            </ng-template>
+
             <span class="discount-sticker detail" *ngIf="p.showDiscountBadge">POPUST {{ p.discountPercent }}%</span>
+
+            <div class="detail-media-actions">
+              <button
+                type="button"
+                class="detail-media-action"
+                *ngIf="p.modelFile"
+                [class.active]="mediaMode === 'model'"
+                (click)="showModel(p)"
+                title="360 preview"
+              >
+                <i class="fa-solid fa-cube"></i>
+                <span>360</span>
+              </button>
+              <button
+                type="button"
+                class="detail-media-action"
+                *ngIf="mediaMode === 'model'"
+                (click)="showImage()"
+                title="Image view"
+              >
+                <i class="fa-regular fa-image"></i>
+                <span>Image</span>
+              </button>
+              <button type="button" class="detail-media-action" (click)="openScreenshot(p)" title="Open screenshot">
+                <i class="fa-solid fa-up-right-from-square"></i>
+                <span>Screenshot</span>
+              </button>
+            </div>
           </div>
 
           <div class="badges">

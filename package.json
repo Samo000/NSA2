@@ -38,9 +38,11 @@
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@fortawesome/free-brands-svg-icons": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
+    "@google/model-viewer": "^4.3.1",
     "aos": "^2.3.4",
     "bootstrap": "^5.3.8",
     "express": "^5.1.0",
+    "nodemailer": "^8.0.10",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

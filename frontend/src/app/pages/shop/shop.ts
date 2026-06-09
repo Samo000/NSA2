@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -10,15 +10,19 @@ import { ProductCatalogService } from '../../services/product-catalog.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './shop.html',
-  styleUrl: './shop.scss'
+  styleUrl: './shop.scss',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ShopComponent implements OnInit, OnDestroy {
   private readonly catalog = inject(ProductCatalogService);
   private readonly cdr = inject(ChangeDetectorRef);
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
+  private blurTimer: ReturnType<typeof setTimeout> | null = null;
   private searchValue = '';
 
   debouncedSearch = '';
+  showSuggestions = false;
+  activeModelSlug = '';
   sort = 'default';
   selectedCategory = 'all';
   minPrice: number | null = null;
@@ -36,6 +40,7 @@ export class ShopComponent implements OnInit, OnDestroy {
 
   set search(value: string) {
     this.searchValue = value;
+    this.showSuggestions = Boolean(this.searchValue.trim());
 
     if (this.searchTimer) {
       clearTimeout(this.searchTimer);
@@ -54,6 +59,10 @@ export class ShopComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.searchTimer) {
       clearTimeout(this.searchTimer);
+    }
+
+    if (this.blurTimer) {
+      clearTimeout(this.blurTimer);
     }
   }
 
@@ -95,9 +104,74 @@ export class ShopComponent implements OnInit, OnDestroy {
     return filtered;
   }
 
+  suggestions(): ProductImage[] {
+    const query = this.searchValue.trim();
+    if (!query) return [];
+
+    return this.products
+      .map((product) => ({
+        product,
+        score: this.fuzzyScore(this.searchText(product), query)
+      }))
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score || a.product.name.localeCompare(b.product.name))
+      .slice(0, 5)
+      .map((item) => item.product);
+  }
+
+  focusSearch(): void {
+    if (this.blurTimer) {
+      clearTimeout(this.blurTimer);
+      this.blurTimer = null;
+    }
+
+    this.showSuggestions = Boolean(this.searchValue.trim());
+  }
+
+  blurSearch(): void {
+    this.blurTimer = setTimeout(() => {
+      this.showSuggestions = false;
+      this.cdr.markForCheck();
+    }, 160);
+  }
+
+  chooseSuggestion(product: ProductImage): void {
+    this.searchValue = product.name;
+    this.debouncedSearch = product.name;
+    this.showSuggestions = false;
+
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
+      this.searchTimer = null;
+    }
+  }
+
+  activateModel(product: ProductImage, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!product.modelFile) return;
+    this.activeModelSlug = product.slug;
+  }
+
+  showImage(product: ProductImage, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.activeModelSlug = '';
+  }
+
+  openScreenshot(product: ProductImage, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const url = new URL(product.src, window.location.origin);
+    window.open(url.href, '_blank', 'noopener,noreferrer');
+  }
+
   clearFilters(): void {
     this.search = '';
     this.debouncedSearch = '';
+    this.showSuggestions = false;
+    this.activeModelSlug = '';
     this.sort = 'default';
     this.selectedCategory = 'all';
     this.minPrice = null;

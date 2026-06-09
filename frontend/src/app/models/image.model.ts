@@ -1,5 +1,6 @@
 export interface ProductImage {
   src: string;
+  modelFile?: string;
   alt: string;
   name: string;
   price: string;
@@ -25,6 +26,7 @@ export const FEATURED_PRODUCTS: ProductImage[] = [
     rating: 4.8,
     ratingCount: 147,
     stock: 8,
+    modelFile: '/assets/models/laptop.glb',
     specs: ['CPU: Ryzen 7', 'GPU: RTX 4060', 'RAM: 16 GB', 'SSD: 1 TB', 'Display: 15.6" 144Hz']
   },
   {
@@ -37,6 +39,7 @@ export const FEATURED_PRODUCTS: ProductImage[] = [
     rating: 4.6,
     ratingCount: 203,
     stock: 16,
+    modelFile: '/assets/models/keyboard.glb',
     specs: ['Switches: Red', 'Layout: US / ISO', 'Backlight: RGB', 'Connection: USB-C', 'Frame: Aluminum']
   },
   {
@@ -49,6 +52,7 @@ export const FEATURED_PRODUCTS: ProductImage[] = [
     rating: 4.7,
     ratingCount: 121,
     stock: 5,
+    modelFile: '/assets/models/monitor.glb',
     specs: [
       'Resolution: 2560x1440',
       'Refresh rate: 165Hz',
@@ -67,6 +71,7 @@ export const FEATURED_PRODUCTS: ProductImage[] = [
     rating: 4.4,
     ratingCount: 166,
     stock: 23,
+    modelFile: '/assets/models/mouse.glb',
     specs: ['Sensor: 26K DPI', 'Weight: 65g', 'Switches: Optical', 'Cable: Paracord', 'Feet: PTFE']
   },
   {
@@ -79,6 +84,7 @@ export const FEATURED_PRODUCTS: ProductImage[] = [
     rating: 4.5,
     ratingCount: 98,
     stock: 0,
+    modelFile: '/assets/models/headset.glb',
     specs: [
       'Drivers: 50mm',
       'Microphone: Detachable',
@@ -97,6 +103,7 @@ export const FEATURED_PRODUCTS: ProductImage[] = [
     rating: 4.3,
     ratingCount: 84,
     stock: 4,
+    modelFile: '/assets/models/chair.glb',
     specs: ['Material: PU leather', 'Armrests: 4D', 'Tilt: 90-155 deg', 'Max load: 140 kg', 'Lumbar & neck pillows']
   },
   {
@@ -109,6 +116,7 @@ export const FEATURED_PRODUCTS: ProductImage[] = [
     rating: 4.7,
     ratingCount: 67,
     stock: 2,
+    modelFile: '/assets/models/desk.glb',
     specs: ['Width: 140 cm', 'Depth: 70 cm', 'Frame: Steel', 'Cable tray: Yes', 'Surface: Carbon texture']
   },
   {
@@ -121,6 +129,7 @@ export const FEATURED_PRODUCTS: ProductImage[] = [
     rating: 4.6,
     ratingCount: 112,
     stock: 11,
+    modelFile: '/assets/models/mic.glb',
     specs: ['Pattern: Cardioid', 'Sample rate: 96 kHz', 'Controls: Gain / Mute', 'Mount: Shock mount', 'Connection: USB-C']
   },
   {
@@ -133,6 +142,7 @@ export const FEATURED_PRODUCTS: ProductImage[] = [
     rating: 4.2,
     ratingCount: 75,
     stock: 9,
+    modelFile: '/assets/models/webcam.glb',
     specs: ['Video: 1080p', 'FPS: 60', 'Focus: Auto', 'Microphones: Dual', 'Mount: Tripod ready']
   }
 ];

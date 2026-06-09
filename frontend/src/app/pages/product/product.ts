@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, computed, signal } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef, Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -13,12 +13,14 @@ import { ProductCatalogService } from '../../services/product-catalog.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './product.html',
-  styleUrl: './product.scss'
+  styleUrl: './product.scss',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ProductPageComponent {
   slug = signal<string>('');
   loadingProduct = signal<boolean>(true);
   readonly stars = [1, 2, 3, 4, 5];
+  mediaMode: 'image' | 'model' = 'image';
 
   reviewRating = 5;
   reviewComment = '';
@@ -41,6 +43,7 @@ export class ProductPageComponent {
     route.paramMap.subscribe((p) => {
       const slug = p.get('slug') ?? '';
       this.slug.set(slug);
+      this.mediaMode = 'image';
       this.loadingProduct.set(Boolean(slug));
       if (slug) {
         void this.catalog.loadOne(slug).finally(() => {
@@ -54,6 +57,20 @@ export class ProductPageComponent {
 
   add(p: ProductImage): void {
     this.cart.addProduct(p, 1);
+  }
+
+  showModel(product: ProductImage): void {
+    if (!product.modelFile) return;
+    this.mediaMode = 'model';
+  }
+
+  showImage(): void {
+    this.mediaMode = 'image';
+  }
+
+  openScreenshot(product: ProductImage): void {
+    const url = new URL(product.src, window.location.origin);
+    window.open(url.href, '_blank', 'noopener,noreferrer');
   }
 
   currentProduct(): ProductImage | null {
