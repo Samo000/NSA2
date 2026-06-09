@@ -30,6 +30,7 @@ function getTransporter() {
       host: cleanString(process.env.SMTP_HOST),
       port,
       secure,
+      family: 4,
       auth: {
         user: cleanString(process.env.SMTP_USER),
         pass: cleanString(process.env.SMTP_PASS)
